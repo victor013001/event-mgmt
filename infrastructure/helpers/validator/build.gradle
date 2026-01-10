@@ -1,0 +1,10 @@
+dependencies {
+    //DOMAIN
+    implementation project(':model')
+
+    //SPRING
+    implementation 'org.springframework:spring-context'
+
+    //UTIL
+    implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+}

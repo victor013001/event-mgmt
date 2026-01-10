@@ -1,0 +1,20 @@
+dependencies {
+    //DOMAIN
+    implementation project(':model')
+    implementation project(':usecase')
+
+    //INFRASTRUCTURE - HELPER
+
+    //SPRING
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    //AWS
+    implementation 'software.amazon.awssdk:sqs'
+
+    //LOGGING
+    implementation 'org.apache.logging.log4j:log4j-api'
+
+    //MAPPER
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+}

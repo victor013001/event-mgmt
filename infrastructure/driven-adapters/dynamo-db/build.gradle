@@ -1,0 +1,16 @@
+dependencies {
+    //DOMAIN
+    implementation project(':model')
+
+    //SPRING
+    implementation 'org.springframework:spring-context'
+
+    //AWS
+    implementation 'software.amazon.awssdk:dynamodb-enhanced'
+
+    //MAPPER
+    implementation "org.reactivecommons.utils:object-mapper-api:${objectMapperVersion}"
+    testImplementation "org.reactivecommons.utils:object-mapper:${objectMapperVersion}"
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+}

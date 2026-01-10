@@ -1,0 +1,4 @@
+dependencies {
+    //DOMAIN
+    implementation project(':model')
+}

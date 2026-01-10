@@ -1,0 +1,56 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+	testImplementation 'com.tngtech.archunit:archunit:1.4.1'
+    //INFRASTRUCTURE
+    //ENTRY-POINT
+	implementation project(':reactive-web')
+	implementation project(':sqs-listener')
+
+    //DRIVEN-ADAPTER
+	implementation project(':dynamo-db')
+	implementation project(':sqs-sender')
+
+    //HELPER
+	implementation project(':validator')
+	implementation project(':metrics')
+	implementation project(':parser')
+
+    //DOMAIN
+    implementation project(':model')
+    implementation project(':usecase')
+
+    //SPRING
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
+
+    //MAPPER
+	implementation "org.reactivecommons.utils:object-mapper:${objectMapperVersion}"
+
+    //ARCHITECTURE
+    testImplementation "com.tngtech.archunit:archunit:${archunitVersion}"
+
+    //SERIALIZATION
+    testImplementation 'tools.jackson.core:jackson-databind'
+
+    //RESILIENCE
+    implementation "io.github.resilience4j:resilience4j-spring-boot3:${resilience4jVersion}"
+    implementation "io.github.resilience4j:resilience4j-reactor:${resilience4jVersion}"
+    implementation "io.github.resilience4j:resilience4j-vavr:${resilience4jVersion}"
+}
+
+tasks.register('explodedJar', Copy) {
+    with jar
+    into layout.buildDirectory.dir("exploded")
+}
+
+jar {
+    // To disable the *-plain.jar
+    enabled = false
+}
+
+bootJar {
+    // Sets output jar name
+    archiveFileName = "${project.getParent().getName()}.${archiveExtension.get()}"
+}

@@ -1,0 +1,17 @@
+dependencies {
+    //DOAMIN
+    implementation project(':model')
+
+    //SPRING
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+
+    //LOGGING
+    implementation 'org.apache.logging.log4j:log4j-api'
+
+    //AWS
+    implementation 'software.amazon.awssdk:sqs'
+
+    //MAPPER
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+}
