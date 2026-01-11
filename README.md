@@ -36,8 +36,8 @@ locally with LocalStack.
 - domain-usecase: Use cases (application logic)
 - infrastructure/entry-points
     - reactive-web (WebFlux Router and Handler)
-    - sqs (SQS listener and consumer)
-    - scheduler (scheduled jobs)
+    - sqs-listener (SQS consumer with purchase processing)
+        - scheduler (scheduled jobs)
 - infrastructure/driven-adapters
     - dynamodb (persistence)
     - sqs (publisher)
@@ -113,6 +113,24 @@ The service uses DynamoDB Query operations instead of Scan for better performanc
 - **Events by Place**: Uses a Global Secondary Index (GSI) with `place` as partition key
 - **Avoids Scan operations**: Scan is not used as it's inefficient for large datasets and consumes more RCUs
 - **Query benefits**: More predictable performance, lower cost, and better scalability
+
+## SQS Purchase Processing
+
+The SQS listener implements asynchronous purchase processing with the following components:
+
+- **PurchaseHandler**: Entry point for SQS message handling
+- **PurchaseProcessor**: Core business logic for processing purchase events
+- **Validation**: Message validation and parameter extraction
+- **Error Handling**: Structured logging for business and technical exceptions
+- **Utilities**: JSON parsing, field validation, and message cleaning
+
+### Message Processing Flow
+
+1. SQS message received by PurchaseHandler
+2. Message validated and parsed by PurchaseProcessor
+3. Ticket status updated to SOLD via UpdateTicketUseCase
+4. Business exceptions logged but don't fail the message processing
+5. Technical exceptions cause message reprocessing
 
 ## Concurrency Control
 

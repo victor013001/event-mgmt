@@ -32,6 +32,7 @@ public enum TechnicalMessageType {
     ERROR_MS_RESERVE_TICKET("RT-001", 400, "The reserve cannot be completed", TechnicalMessageType.UNAVAILABLE_TICKETS_MSG),
 
     //ADAPTER ERRORS
+    JSON_PROCESSING_ERROR("JP-001", 500, "Technical error with Json Processing", TechnicalMessageType.INTERNAL_SERVER_MSG),
     ERROR_MS_DYNAMO_ERROR("DE-001", 500, "There was an error with the Dynamo adapter.", TechnicalMessageType.INTERNAL_SERVER_MSG),
     ERROR_EVENT_PUBLISH("SQS-001", 500, "There was an error with the SQS adapter.", TechnicalMessageType.INTERNAL_SERVER_MSG);
 
