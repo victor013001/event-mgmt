@@ -7,28 +7,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TechnicalMessageType {
 
-  //VALUES
-  ERROR_MS_INVALID_NAME("VAL001", 400, "The name is required.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_DATE("VAL002", 400, "The date is required.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_PLACE("VAL003", 400, "The place is required.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_CAPACITY("VAL004", 400, "The capacity has to be greater than 0.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_FLOW_ID("VAL005", 400, "The flow id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_X_USER_ID("VAL006", 400, "The x user id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_EVENT("VAL005", 400, "The event is not valid.", TechnicalMessageType.BAD_REQUEST_MSG),
-  ERROR_MS_INVALID_HEADERS("H-001", 400, "The headers are invalid.", TechnicalMessageType.BAD_REQUEST_MSG),
+    //VALUES
+    ERROR_MS_INVALID_NAME("VAL001", 400, "The name is required.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_DATE("VAL002", 400, "The date is required.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_PLACE("VAL003", 400, "The place is required.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_CAPACITY("VAL004", 400, "The capacity has to be greater than 0.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_FLOW_ID("VAL005", 400, "The flow id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_X_USER_ID("VAL006", 400, "The x user id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_EVENT("VAL005", 400, "The event is not valid.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_HEADERS("H-001", 400, "The headers are invalid.", TechnicalMessageType.BAD_REQUEST_MSG),
 
-  //MS ERRORS
-  ERROR_MS_INTERNAL_SERVER("500", 500, TechnicalMessageType.INTERNAL_SERVER_MSG , TechnicalMessageType.INTERNAL_SERVER_MSG),
+    //MS ERRORS
+    ERROR_MS_INTERNAL_SERVER("500", 500, TechnicalMessageType.INTERNAL_SERVER_MSG, TechnicalMessageType.INTERNAL_SERVER_MSG),
+    ERROR_MS_BAD_REQUEST("400", 400, TechnicalMessageType.BAD_REQUEST_MSG, TechnicalMessageType.BAD_REQUEST_MSG),
+    SUCCESS("200", 200, TechnicalMessageType.SUCCESS_MSG, TechnicalMessageType.SUCCESS_MSG),
 
-  //ADAPTER ERRORS
-  ERROR_MS_DYNAMO_ERROR("DE-001", 500, "There was an error with the Dynamo adapter.", TechnicalMessageType.INTERNAL_SERVER_MSG);
+    //ADAPTER ERRORS
+    ERROR_MS_DYNAMO_ERROR("DE-001", 500, "There was an error with the Dynamo adapter.", TechnicalMessageType.INTERNAL_SERVER_MSG);
 
 
-  private final String code;
-  private final int externalCode;
-  private final String message;
-  private final String externalMessage;
+    private final String code;
+    private final int externalCode;
+    private final String message;
+    private final String externalMessage;
 
-  private static final String BAD_REQUEST_MSG = "The request could not be processed due to invalid or incomplete data.";
-  private static final String INTERNAL_SERVER_MSG = "An unexpected server error occurred. Please try again later.";
+    private static final String BAD_REQUEST_MSG = "The request could not be processed due to invalid or incomplete data.";
+    private static final String INTERNAL_SERVER_MSG = "An unexpected server error occurred. Please try again later.";
+    private static final String SUCCESS_MSG = "SUCCESS";
 }

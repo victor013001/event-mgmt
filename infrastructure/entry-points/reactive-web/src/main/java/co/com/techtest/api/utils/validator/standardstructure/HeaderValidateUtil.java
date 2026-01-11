@@ -15,17 +15,17 @@ import static co.com.techtest.validator.ValidatorHelper.isValidNotNullAndNotBlan
 
 @UtilityClass
 public class HeaderValidateUtil {
-  public static Mono<List<ErrorDetail>> validateHeaders(HeaderRequest headers) {
-    return Mono.zip(
-        isValidNotNullAndNotBlank(headers.xUserId()),
-        isValidNotNullAndNotBlank(headers.flowId())
-    ).map(HeaderValidateUtil::validationsMessage);
-  }
+    public static Mono<List<ErrorDetail>> validateHeaders(HeaderRequest headers) {
+        return Mono.zip(
+                isValidNotNullAndNotBlank(headers.xUserId()),
+                isValidNotNullAndNotBlank(headers.flowId())
+        ).map(HeaderValidateUtil::validationsMessage);
+    }
 
-  private List<ErrorDetail> validationsMessage(Tuple2<Boolean, Boolean> validations) {
-    List<ErrorDetail> errors = new ArrayList<>();
-    validateField(validations.getT1(), errors, TechnicalMessageType.ERROR_MS_INVALID_X_USER_ID);
-    validateField(validations.getT1(), errors, TechnicalMessageType.ERROR_MS_INVALID_FLOW_ID);
-    return errors;
-  }
+    private List<ErrorDetail> validationsMessage(Tuple2<Boolean, Boolean> validations) {
+        List<ErrorDetail> errors = new ArrayList<>();
+        validateField(validations.getT1(), errors, TechnicalMessageType.ERROR_MS_INVALID_X_USER_ID);
+        validateField(validations.getT2(), errors, TechnicalMessageType.ERROR_MS_INVALID_FLOW_ID);
+        return errors;
+    }
 }
