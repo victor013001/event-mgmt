@@ -7,6 +7,7 @@ import co.com.techtest.model.util.exception.BusinessException;
 import co.com.techtest.usecase.event.EventUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
@@ -20,6 +21,7 @@ import static co.com.techtest.api.utils.ResponseUtilApi.logRequest;
 import static co.com.techtest.api.utils.validator.event.CreateEventValidator.validateCreateEventRequest;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class CreateEventProcessor {
 
@@ -29,11 +31,11 @@ public class CreateEventProcessor {
         return validateCreateEventRequest(createEventRequest)
                 .filter(Predicate.not(List::isEmpty))
                 .flatMap(errors -> buildResponseBadRequest(errors, createEventRequest.flowId(), operationType))
-                .switchIfEmpty(Mono.defer(() -> executeProcessor(createEventRequest, operationType)))
+                .switchIfEmpty(Mono.defer(() -> executeUseCase(createEventRequest, operationType)))
                 .doOnSubscribe(_ -> logRequest(operationType, createEventRequest));
     }
 
-    private Mono<ServerResponse> executeProcessor(CreateEventRequest createEventRequest, OperationType operationType) {
+    private Mono<ServerResponse> executeUseCase(CreateEventRequest createEventRequest, OperationType operationType) {
         return eventUseCase.createEvent(EventApiMapper.MAPPER.toParameter(createEventRequest))
                 .map(EventApiMapper.MAPPER::toResponse)
                 .flatMap(eventResponse -> buildResponseSuccess(eventResponse, operationType, createEventRequest.flowId()))

@@ -17,6 +17,7 @@
                 <path>X-User-Id</path>
                 <path>headers.X-User-Id</path>
                 <path>userId</path>
+                <path>xUserId</path>
             </jsonGeneratorDecorator>
         </encoder>
     </appender>

@@ -29,13 +29,13 @@ public class ResponseUtilApi {
     public static final String KV_RESPONSE = "RS";
     public static final String NAME_RESPONSE = "Response";
 
-    private static final String ERROR_DETAILS_RESPONSE_MESSAGE = " Error Details Response";
+    private static final String ERROR_DETAILS_RESPONSE_MESSAGE = "Error Details Response";
     private static final String ERROR_DETAILS_RESPONSE_KEY = "ErrorDetailsRS";
     private static final String ERROR_BUSINESS_RESPONSE_MESSAGE = "Error Business Response";
     private static final String ERROR_BUSINESS_RESPONSE_KEY = "ErrorBusinessRS";
-    private static final String ERROR_FALLBACK_OPEN_RESPONSE_MESSAGE = " Error Fallback Open Response";
+    private static final String ERROR_FALLBACK_OPEN_RESPONSE_MESSAGE = "Error Fallback Open Response";
     private static final String ERROR_FALLBACK_OPEN_RESPONSE_KEY = "ErrorFallbackOpenRS";
-    private static final String ERROR_FALLBACK_RESPONSE_MESSAGE = " Error Fallback Response";
+    private static final String ERROR_FALLBACK_RESPONSE_MESSAGE = "Error Fallback Response";
     private static final String ERROR_FALLBACK_RESPONSE_KEY = "ErrorFallbackRS";
 
     public static Mono<ServerResponse> buildFallback(ServerRequest request, TechnicalMessageType technicalMessageType,

@@ -1,6 +1,7 @@
 package co.com.techtest.api;
 
 import co.com.techtest.api.handler.event.CreateEventHandler;
+import co.com.techtest.api.handler.event.GetEventsHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +21,16 @@ class RouterRestTest {
     @Mock
     private CreateEventHandler createEventHandler;
 
+    @Mock
+    private GetEventsHandler getEventsHandler;
+
     private WebTestClient webTestClient;
     private RouterRest routerRest;
 
     @BeforeEach
     void setUp() {
         routerRest = new RouterRest();
-        RouterFunction<ServerResponse> routerFunction = routerRest.routerFunction(createEventHandler);
+        RouterFunction<ServerResponse> routerFunction = routerRest.routerFunction(createEventHandler, getEventsHandler);
         webTestClient = WebTestClient.bindToRouterFunction(routerFunction).build();
     }
 
@@ -46,11 +50,45 @@ class RouterRestTest {
     }
 
     @Test
+    void testGetEventsEndpoint() {
+        when(getEventsHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Events retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/event?place=Test Place")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testGetEventsEndpointWithoutPlace() {
+        when(getEventsHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("All events retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/event")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
     void testCreateEventEndpointWithoutHeaders() {
         webTestClient.post()
                 .uri("/api/v1/event")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("{\"name\":\"Test Event\"}")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetEventsEndpointWithoutHeaders() {
+        webTestClient.get()
+                .uri("/api/v1/event")
                 .exchange()
                 .expectStatus().isBadRequest();
     }
@@ -79,7 +117,7 @@ class RouterRestTest {
 
     @Test
     void testUnsupportedMethod() {
-        webTestClient.get()
+        webTestClient.put()
                 .uri("/api/v1/event")
                 .exchange()
                 .expectStatus().isNotFound();

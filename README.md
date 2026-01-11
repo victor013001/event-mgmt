@@ -1,6 +1,8 @@
 # EventMgmt
 
-Event management and ticket purchasing microservice with concurrency control, asynchronous purchase processing, and automatic release of expired reservations. Built with Clean/Hex architecture using Bancolombia’s scaffold and runnable locally with LocalStack.
+Event management and ticket purchasing microservice with concurrency control, asynchronous purchase processing, and
+automatic release of expired reservations. Built with Clean/Hex architecture using Bancolombia’s scaffold and runnable
+locally with LocalStack.
 
 ## Technologies
 
@@ -16,7 +18,7 @@ Event management and ticket purchasing microservice with concurrency control, as
 ## Features
 
 - Create event
-- List events
+- Get events by place (using DynamoDB Query with GSI)
 - Get real-time availability by event
 - Place order (reserve tickets)
 - Get order status
@@ -25,6 +27,7 @@ Event management and ticket purchasing microservice with concurrency control, as
 - Concurrency control to prevent overselling
 
 ## Architecture
+
 ![Architecture.png](Architecture.png)
 
 ### Modules (Bancolombia Scaffold)
@@ -61,7 +64,7 @@ Event management and ticket purchasing microservice with concurrency control, as
 - SOLD
 - COMPLIMENTARY
 - EXPIRED
-![Ticker Status.png](Ticker%20Status.png)
+  ![Ticker Status.png](Ticker%20Status.png)
 
 ## API Endpoints
 
@@ -71,6 +74,7 @@ Base path depends on your configuration. Examples below assume /api.
 
 - POST /api/events
 - GET /api/events
+- GET /api/events?place={place} (Query events by place using GSI)
 - GET /api/events/{eventId}/availability
 
 ### Orders
@@ -90,6 +94,14 @@ Base path depends on your configuration. Examples below assume /api.
 TODO Add an endpoints table plus request/response examples.
 
 Suggested location: docs/api.md
+
+## DynamoDB Query Strategy
+
+The service uses DynamoDB Query operations instead of Scan for better performance and cost efficiency:
+
+- **Events by Place**: Uses a Global Secondary Index (GSI) with `place` as partition key
+- **Avoids Scan operations**: Scan is not used as it's inefficient for large datasets and consumes more RCUs
+- **Query benefits**: More predictable performance, lower cost, and better scalability
 
 ## Concurrency Control
 
@@ -146,7 +158,8 @@ docker-compose up --build
 
 ## Logging and Sensitive Data Masking
 
-The project uses Logback with a Logstash encoder to output structured JSON logs and apply masking rules for sensitive data.
+The project uses Logback with a Logstash encoder to output structured JSON logs and apply masking rules for sensitive
+data.
 
 - Config file: src/main/resources/logback.xml
 - Masking strategy

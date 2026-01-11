@@ -7,6 +7,8 @@ import co.com.techtest.model.event.EventParameter;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 @Mapper
 public interface EventApiMapper {
 
@@ -15,4 +17,6 @@ public interface EventApiMapper {
     EventParameter toParameter(CreateEventRequest request);
 
     EventResponse toResponse(Event event);
+
+    List<EventResponse> toResponseList(List<Event> events);
 }
