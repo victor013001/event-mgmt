@@ -67,4 +67,32 @@ class ValidatorHelperTest {
                 .expectNext(false)
                 .verifyComplete();
     }
+
+    @Test
+    void shouldReturnFalseForNullLong() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero((Long) null))
+                .expectNext(false)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnFalseForNegativeLong() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero(-1L))
+                .expectNext(false)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnFalseForNullInteger() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero((Integer) null))
+                .expectNext(false)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnFalseForNegativeInteger() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero(-1))
+                .expectNext(false)
+                .verifyComplete();
+    }
 }

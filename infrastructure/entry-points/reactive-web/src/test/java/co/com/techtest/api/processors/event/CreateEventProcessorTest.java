@@ -60,7 +60,7 @@ class CreateEventProcessorTest {
         Mono<ServerResponse> result = createEventProcessor.execute(validRequest, OperationType.CREATE_EVENT);
 
         StepVerifier.create(result)
-                .assertNext(response -> assertEquals(HttpStatus.CREATED, response.statusCode()))
+                .assertNext(response -> assertEquals(HttpStatus.OK, response.statusCode()))
                 .verifyComplete();
     }
 

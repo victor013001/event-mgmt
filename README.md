@@ -79,6 +79,7 @@ Base path depends on your configuration. Examples below assume /api.
 All API requests require the following headers:
 
 - `X-User-Id`: User identifier provided by API Gateway
+- `X-API-Key`: API key for authentication (obtained from Terraform output)
 - `flow-id`: Flow identifier for tracing across SQS and other services
 
 ### Events
@@ -105,6 +106,8 @@ All API requests require the following headers:
 TODO Add an endpoints table plus request/response examples.
 
 Suggested location: docs/api.md
+
+**Note**: When using the deployed API Gateway, all requests require the `X-API-Key` header with the API key obtained from `terraform output api_key_value`.
 
 ## DynamoDB Query Strategy
 
@@ -237,6 +240,130 @@ docker-compose up --build
 
 - API: http://localhost:8080
 - Swagger UI: http://localhost:8080/v3/swagger-ui.html
+
+## AWS Deployment with Terraform
+
+### Prerequisites
+
+- Terraform >= 1.3.0
+- AWS CLI configured
+- ECR repository with application image
+
+### Configuration
+
+1. Copy the example configuration:
+
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+```
+
+2. Edit `terraform/terraform.tfvars` with your values:
+
+```hcl
+# Basic Configuration
+region   = "us-east-1"
+app_name = "event-mgmt"
+vpc_cidr = "10.10.0.0/16"
+
+# Application Configuration
+active_profile = "prod"
+
+# AWS Endpoints (empty for real AWS, set for LocalStack)
+aws_dynamodb_endpoint = ""
+adapter_sqs_endpoint = ""
+entrypoint_sqs_endpoint = ""
+
+# SQS Configuration
+entrypoint_sqs_wait_time_seconds = 20
+entrypoint_sqs_max_number_of_messages = 10
+entrypoint_sqs_visibility_timeout_seconds = 30
+entrypoint_sqs_number_of_threads = 1
+
+# CORS Configuration - CHANGE THIS TO YOUR DOMAIN
+cors_allowed_origins = "https://yourdomain.com,https://app.yourdomain.com"
+
+# Scheduler Configuration
+scheduler_ticket_expiration_fixed_delay = 300000
+```
+
+### Available Variables (Examples)
+
+The `terraform.tfvars.example` file contains all possible variables you can configure with example values:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `region` | AWS region to deploy resources | `us-east-1` | No |
+| `app_name` | Base name for application resources | `event-mgmt` | No |
+| `vpc_cidr` | CIDR block for the VPC | `10.0.0.0/16` | No |
+| `ecr_repository_name` | ECR repository name | `event-mgmt` | No |
+| `ecr_image_tag` | ECR image tag to deploy | `latest` | No |
+| `active_profile` | Spring Boot profile | `dev` | No |
+| `ecs_cpu` | ECS Fargate CPU units | `256` | No |
+| `ecs_memory` | ECS Fargate memory (MiB) | `512` | No |
+| `ecs_desired_count` | Number of ECS tasks | `1` | No |
+| `ecs_container_port` | Application port | `8080` | No |
+| `ecs_log_retention_days` | ECS log retention | `1` | No |
+| `apigw_log_retention_days` | API Gateway log retention | `1` | No |
+| `aws_dynamodb_endpoint` | DynamoDB endpoint (for LocalStack) | `""` | No |
+| `adapter_sqs_endpoint` | SQS adapter endpoint (for LocalStack) | `""` | No |
+| `entrypoint_sqs_endpoint` | SQS entrypoint endpoint (for LocalStack) | `""` | No |
+| `entrypoint_sqs_wait_time_seconds` | SQS wait time | `20` | No |
+| `entrypoint_sqs_max_number_of_messages` | SQS max messages | `10` | No |
+| `entrypoint_sqs_visibility_timeout_seconds` | SQS visibility timeout | `30` | No |
+| `entrypoint_sqs_number_of_threads` | SQS consumer threads | `1` | No |
+| `cors_allowed_origins` | CORS allowed origins | `https://localhost:3000` | No |
+| `scheduler_ticket_expiration_fixed_delay` | Scheduler delay (ms) | `300000` | No |
+
+### Deploy
+
+1. Initialize Terraform:
+
+```bash
+cd terraform
+terraform init
+```
+
+2. Plan the deployment:
+
+```bash
+terraform plan
+```
+
+3. Apply the infrastructure:
+
+```bash
+terraform apply
+```
+
+4. Get the API Gateway URL and API Key:
+
+```bash
+terraform output apigw_url
+terraform output api_key_value
+```
+
+### Infrastructure Components
+
+The Terraform configuration creates:
+
+- **VPC** with public/private subnets
+- **DynamoDB Tables** (events, inventory, tickets) with KMS encryption
+- **SQS Queue** for asynchronous processing
+- **ECS Fargate** service with auto-scaling
+- **Application Load Balancer** with health checks
+- **API Gateway** with REST API and API key authentication
+- **KMS Key** for encryption
+- **IAM Roles** with least privilege permissions
+- **CloudWatch** log groups
+
+### Security Features
+
+- KMS encryption for DynamoDB tables
+- API key authentication for API Gateway
+- IAM roles with minimal permissions
+- Private subnets for ECS tasks
+- Security groups with restrictive rules
+- CORS configuration for web security
 
 ## Logging and Sensitive Data Masking
 
