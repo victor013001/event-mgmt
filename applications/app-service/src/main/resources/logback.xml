@@ -14,6 +14,9 @@
                 <path>authorization</path>
                 <path>headers.Authorization</path>
                 <path>headers.authorization</path>
+                <path>X-User-Id</path>
+                <path>headers.X-User-Id</path>
+                <path>userId</path>
             </jsonGeneratorDecorator>
         </encoder>
     </appender>

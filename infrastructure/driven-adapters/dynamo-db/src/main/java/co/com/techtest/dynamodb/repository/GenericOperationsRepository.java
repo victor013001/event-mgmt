@@ -1,10 +1,8 @@
 package co.com.techtest.dynamodb.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import org.reactivecommons.utils.ObjectMapper;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.async.SdkPublisher;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -26,7 +24,6 @@ public abstract class GenericOperationsRepository<E, K, V> {
 
     @SuppressWarnings("unchecked")
     protected GenericOperationsRepository(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                          ObjectMapper mapper,
                                           Function<V, E> toDomainFn,
                                           Function<E, V> toDataFn,
                                           String tableName) {

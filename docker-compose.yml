@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,sqs
+      - DEBUG=0
+      - AWS_DEFAULT_REGION=us-east-1
+      - LOCALSTACK_HOST=localstack:4566
+    volumes:
+      - ./docker/localstack/init/ready.d:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -sf http://localhost:4566/_localstack/health | grep -q running"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  eventmgmt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eventmgmt
+    depends_on:
+      localstack:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+
+      - ADAPTER_SQS_REGION=us-east-1
+      - ADAPTER_SQS_ENDPOINT=http://localstack:4566
+      - ADAPTER_SQS_QUEUE_URL=http://localstack:4566/000000000000/orders-queue
+
+      - ADAPTER_DYNAMODB_REGION=us-east-1
+      - ADAPTER_DYNAMODB_ENDPOINT=http://localstack:4566
+      - ADAPTER_DYNAMODB_EVENTS_TABLE=events
+      - ADAPTER_DYNAMODB_INVENTORY_TABLE=inventory
+      - ADAPTER_DYNAMODB_ORDERS_TABLE=orders

@@ -1,47 +1,177 @@
-# Proyecto Base Implementando Clean Architecture
+# EventMgmt
 
-## Antes de Iniciar
+Event management and ticket purchasing microservice with concurrency control, asynchronous purchase processing, and automatic release of expired reservations. Built with Clean/Hex architecture using Bancolombia’s scaffold and runnable locally with LocalStack.
 
-Empezaremos por explicar los diferentes componentes del proyectos y partiremos de los componentes externos, continuando con los componentes core de negocio (dominio) y por último el inicio y configuración de la aplicación.
+## Technologies
 
-Lee el artículo [Clean Architecture — Aislando los detalles](https://medium.com/bancolombia-tech/clean-architecture-aislando-los-detalles-4f9530f35d7a)
+- Java 25
+- Spring Boot 4
+- Spring WebFlux (Router/Handler)
+- Reactor (Mono/Flux)
+- AWS SDK v2 (DynamoDB, SQS)
+- Docker, Docker Compose, LocalStack
+- Spring Boot Actuator, SpringDoc OpenAPI
+- Testing: JUnit 5, Mockito, Reactor Test, ArchUnit, Jacoco, Pitest
 
-# Arquitectura
+## Features
 
-![Clean Architecture](https://miro.medium.com/max/1400/1*ZdlHz8B0-qu9Y-QO3AXR_w.png)
+- Create event
+- List events
+- Get real-time availability by event
+- Place order (reserve tickets)
+- Get order status
+- Asynchronous purchase processing via SQS consumer
+- Automatic release of expired reservations via scheduler
+- Concurrency control to prevent overselling
 
-## Domain
+## Architecture
+![Architecture.png](Architecture.png)
 
-Es el módulo más interno de la arquitectura, pertenece a la capa del dominio y encapsula la lógica y reglas del negocio mediante modelos y entidades del dominio.
+### Modules (Bancolombia Scaffold)
 
-## Usecases
+- domain-model: Business entities and domain rules
+- domain-usecase: Use cases (application logic)
+- infrastructure/entry-points
+    - reactive-web (WebFlux Router and Handler)
+    - sqs (SQS listener and consumer)
+    - scheduler (scheduled jobs)
+- infrastructure/driven-adapters
+    - dynamodb (persistence)
+    - sqs (publisher)
+    - rest-consumer (optional, only if required)
 
-Este módulo gradle perteneciente a la capa del dominio, implementa los casos de uso del sistema, define lógica de aplicación y reacciona a las invocaciones desde el módulo de entry points, orquestando los flujos hacia el módulo de entities.
+## Core Flows
 
-## Infrastructure
+![Use Cases.png](Use%20Cases.png)
 
-### Helpers
+### Purchase Flow
 
-En el apartado de helpers tendremos utilidades generales para los Driven Adapters y Entry Points.
+1. Client calls the place order endpoint
+2. Service reserves inventory using a DynamoDB conditional update
+3. Service creates an order with status RESERVED and an expiration timestamp
+4. Service publishes the orderId to SQS
+5. SQS consumer processes the order asynchronously
+6. If still valid, order transitions to SOLD or COMPLIMENTARY and inventory is finalized
+7. Scheduler periodically releases expired reservations
 
-Estas utilidades no están arraigadas a objetos concretos, se realiza el uso de generics para modelar comportamientos
-genéricos de los diferentes objetos de persistencia que puedan existir, este tipo de implementaciones se realizan
-basadas en el patrón de diseño [Unit of Work y Repository](https://medium.com/@krzychukosobudzki/repository-design-pattern-bc490b256006)
+### Order State Machine
 
-Estas clases no puede existir solas y debe heredarse su compartimiento en los **Driven Adapters**
+- RESERVED
+- PENDING_CONFIRMATION
+- SOLD
+- COMPLIMENTARY
+- EXPIRED
+![Ticker Status.png](Ticker%20Status.png)
 
-### Driven Adapters
+## API Endpoints
 
-Los driven adapter representan implementaciones externas a nuestro sistema, como lo son conexiones a servicios rest,
-soap, bases de datos, lectura de archivos planos, y en concreto cualquier origen y fuente de datos con la que debamos
-interactuar.
+Base path depends on your configuration. Examples below assume /api.
 
-### Entry Points
+### Events
 
-Los entry points representan los puntos de entrada de la aplicación o el inicio de los flujos de negocio.
+- POST /api/events
+- GET /api/events
+- GET /api/events/{eventId}/availability
 
-## Application
+### Orders
 
-Este módulo es el más externo de la arquitectura, es el encargado de ensamblar los distintos módulos, resolver las dependencias y crear los beans de los casos de use (UseCases) de forma automática, inyectando en éstos instancias concretas de las dependencias declaradas. Además inicia la aplicación (es el único módulo del proyecto donde encontraremos la función “public static void main(String[] args)”.
+- POST /api/orders
+- GET /api/orders/{orderId}
 
-**Los beans de los casos de uso se disponibilizan automaticamente gracias a un '@ComponentScan' ubicado en esta capa.**
+### Observability
+
+- GET /actuator/health
+- GET /actuator/prometheus
+- Swagger UI
+    - /swagger-ui.html or /swagger-ui/index.html
+- OpenAPI
+    - /v3/api-docs
+
+TODO Add an endpoints table plus request/response examples.
+
+Suggested location: docs/api.md
+
+## Concurrency Control
+
+This service prevents overselling using DynamoDB conditional writes:
+
+- Reservation step updates inventory only if available >= qty
+- Finalization step is idempotent and safely transitions order status
+- The SQS consumer is designed with at-least-once semantics in mind (duplicate messages are handled)
+
+## Local Setup
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Java 25 toolchain
+
+### Environment Variables
+
+Create a .env file at the repository root. Example:
+
+```
+ACTIVE_PROFILE=local
+
+AWS_REGION=us-east-1
+AWS_ENDPOINT=http://localstack:4566
+
+DYNAMO_EVENTS_TABLE=events
+DYNAMO_INVENTORY_TABLE=inventory
+DYNAMO_ORDERS_TABLE=orders
+
+SQS_QUEUE_URL=http://localstack:4566/000000000000/orders-queue
+SQS_ENDPOINT=http://localstack:4566
+```
+
+### Run Locally with LocalStack
+
+1. Clone the repository
+
+```
+git clone https://github.com/victor013001/event-mgmt.git
+cd event-mgmt
+```
+
+2. Start services
+
+```
+docker-compose up --build
+```
+
+3. Access the application
+
+- API: http://localhost:8080
+- Swagger UI: http://localhost:8080/v3/swagger-ui.html
+
+## Logging and Sensitive Data Masking
+
+The project uses Logback with a Logstash encoder to output structured JSON logs and apply masking rules for sensitive data.
+
+- Config file: src/main/resources/logback.xml
+- Masking strategy
+    - Mask JSON paths such as Authorization, token, apiKey, secret, password
+
+## Tests
+
+Run unit tests
+
+```
+./gradlew clean test
+```
+
+Coverage report
+
+```
+./gradlew jacocoTestReport
+```
+
+Mutation tests
+
+```
+./gradlew pitest
+```
+
+## Author
+
+**[Victor Manuel Osorio Garcia](https://www.linkedin.com/in/victor013001)** - [GitHub](https://github.com/victor013001)
