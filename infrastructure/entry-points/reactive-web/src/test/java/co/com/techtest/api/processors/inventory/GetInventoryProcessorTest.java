@@ -3,6 +3,7 @@ package co.com.techtest.api.processors.inventory;
 import co.com.techtest.api.dto.request.inventory.GetEventAvailabilityReqParams;
 import co.com.techtest.model.inventory.Inventory;
 import co.com.techtest.model.util.enums.OperationType;
+import co.com.techtest.model.util.enums.TechnicalMessageType;
 import co.com.techtest.model.util.exception.BusinessException;
 import co.com.techtest.usecase.inventory.InventoryUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +35,7 @@ class GetInventoryProcessorTest {
     @Test
     void shouldExecuteSuccessfully() {
         GetEventAvailabilityReqParams params = new GetEventAvailabilityReqParams("flow-123", "user-123", "event-123");
-        Inventory inventory = new Inventory("event-123", 100L, 80L, 20L, 0L);
+        Inventory inventory = new Inventory("event-123", 100L, 80L, 20L, 0L, 0L);
 
         when(inventoryUseCase.getEventInventory("event-123"))
                 .thenReturn(Mono.just(inventory));
@@ -73,7 +74,7 @@ class GetInventoryProcessorTest {
     @Test
     void shouldHandleBusinessException() {
         GetEventAvailabilityReqParams params = new GetEventAvailabilityReqParams("flow-123", "user-123", "event-123");
-        BusinessException businessException = new BusinessException(null);
+        BusinessException businessException = new BusinessException(TechnicalMessageType.ERROR_MS_INTERNAL_SERVER);
 
         when(inventoryUseCase.getEventInventory(anyString()))
                 .thenReturn(Mono.error(businessException));

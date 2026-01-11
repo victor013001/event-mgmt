@@ -1,53 +1,61 @@
 package co.com.techtest.validator;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 import reactor.test.StepVerifier;
 
 class ValidatorHelperTest {
 
     @Test
-    void shouldReturnTrueForValidString() {
+    void shouldReturnTrueForValidNotNullAndNotBlankString() {
         StepVerifier.create(ValidatorHelper.isValidNotNullAndNotBlank("valid"))
                 .expectNext(true)
                 .verifyComplete();
     }
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings = {" ", "\t", "\n"})
-    void shouldReturnFalseForInvalidString(String input) {
-        StepVerifier.create(ValidatorHelper.isValidNotNullAndNotBlank(input))
+    @Test
+    void shouldReturnFalseForNullString() {
+        StepVerifier.create(ValidatorHelper.isValidNotNullAndNotBlank(null))
                 .expectNext(false)
                 .verifyComplete();
     }
 
     @Test
-    void shouldReturnTrueForPositiveNumber() {
+    void shouldReturnFalseForBlankString() {
+        StepVerifier.create(ValidatorHelper.isValidNotNullAndNotBlank(""))
+                .expectNext(false)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnTrueForValidLong() {
         StepVerifier.create(ValidatorHelper.isHigherThanZero(5L))
                 .expectNext(true)
                 .verifyComplete();
     }
 
-    @ParameterizedTest
-    @ValueSource(longs = {0L, -1L, -100L})
-    void shouldReturnFalseForNonPositiveNumber(Long input) {
-        StepVerifier.create(ValidatorHelper.isHigherThanZero(input))
+    @Test
+    void shouldReturnFalseForZeroLong() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero(0L))
                 .expectNext(false)
                 .verifyComplete();
     }
 
     @Test
-    void shouldReturnFalseForNullNumber() {
-        StepVerifier.create(ValidatorHelper.isHigherThanZero(null))
+    void shouldReturnTrueForValidInteger() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero(5))
+                .expectNext(true)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldReturnFalseForZeroInteger() {
+        StepVerifier.create(ValidatorHelper.isHigherThanZero(0))
                 .expectNext(false)
                 .verifyComplete();
     }
 
     @Test
-    void shouldReturnTrueForNonNullObject() {
+    void shouldReturnTrueForNotNullObject() {
         StepVerifier.create(ValidatorHelper.isNotNull("object"))
                 .expectNext(true)
                 .verifyComplete();

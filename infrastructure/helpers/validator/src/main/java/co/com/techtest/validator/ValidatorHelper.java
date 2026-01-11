@@ -17,6 +17,10 @@ public class ValidatorHelper {
         return Mono.defer(() -> Mono.just(Objects.nonNull(field) && field > 0));
     }
 
+    public static Mono<Boolean> isHigherThanZero(Integer field) {
+        return Mono.defer(() -> Mono.just(Objects.nonNull(field) && field > 0));
+    }
+
     public static Mono<Boolean> isNotNull(Object field) {
         return Mono.defer(() -> Mono.just(Objects.nonNull(field)));
     }

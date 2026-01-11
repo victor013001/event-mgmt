@@ -3,6 +3,8 @@ package co.com.techtest.api.processors.event;
 import co.com.techtest.api.dto.request.event.GetEventRequestParams;
 import co.com.techtest.model.event.Event;
 import co.com.techtest.model.util.enums.OperationType;
+import co.com.techtest.model.util.enums.TechnicalMessageType;
+import co.com.techtest.model.util.exception.BusinessException;
 import co.com.techtest.usecase.event.FindEventsUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,16 +79,17 @@ class GetEventsProcessorTest {
     }
 
     @Test
-    void shouldHandleException() {
+    void shouldHandleBusinessException() {
         GetEventRequestParams params = new GetEventRequestParams("flow123", "user123", "Valid Place");
+        BusinessException businessException = new BusinessException(TechnicalMessageType.ERROR_MS_INTERNAL_SERVER);
 
         when(findEventsUseCase.findEventsByPlace("Valid Place"))
-                .thenReturn(Mono.error(new RuntimeException("Database error")));
+                .thenReturn(Mono.error(businessException));
 
         Mono<ServerResponse> result = getEventsProcessor.execute(params, OperationType.GET_EVENTS);
 
         StepVerifier.create(result)
-                .expectError(RuntimeException.class)
-                .verify();
+                .assertNext(response -> assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode()))
+                .verifyComplete();
     }
 }

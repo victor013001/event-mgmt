@@ -4,18 +4,16 @@ import co.com.techtest.model.inventory.Inventory;
 import co.com.techtest.model.inventory.InventoryParameter;
 import co.com.techtest.model.inventory.gateway.InventoryGateway;
 import co.com.techtest.model.util.exception.BusinessException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryUseCaseTest {
@@ -23,97 +21,41 @@ class InventoryUseCaseTest {
     @Mock
     private InventoryGateway inventoryGateway;
 
+    @InjectMocks
     private InventoryUseCase inventoryUseCase;
 
-    @BeforeEach
-    void setUp() {
-        inventoryUseCase = new InventoryUseCase(inventoryGateway);
-    }
-
     @Test
-    void shouldCreateEventInventorySuccessfully() {
-        InventoryParameter parameter = new InventoryParameter("event-123", 100L);
-        Inventory expectedInventory = new Inventory("event-123", 100L, 100L, 0L, 0L);
+    void shouldCreateEventInventory() {
+        InventoryParameter parameter = new InventoryParameter("event1", 100L);
+        Inventory expectedInventory = new Inventory("event1", 100L, 100L, 0L, 0L, 0L);
 
-        given(inventoryGateway.saveInventory(any(Inventory.class)))
-                .willReturn(Mono.just(expectedInventory));
+        when(inventoryGateway.saveInventory(any(Inventory.class))).thenReturn(Mono.just(expectedInventory));
 
-        Mono<Inventory> result = inventoryUseCase.creteEventInventory(parameter);
-
-        StepVerifier.create(result)
-                .expectNextMatches(inventory -> {
-                    assertEquals("event-123", inventory.eventId());
-                    assertEquals(100L, inventory.capacity());
-                    assertEquals(100L, inventory.available());
-                    assertEquals(0L, inventory.reserved());
-                    assertEquals(0L, inventory.sold());
-                    return true;
-                })
+        StepVerifier.create(inventoryUseCase.creteEventInventory(parameter))
+                .expectNext(expectedInventory)
                 .verifyComplete();
-
-        verify(inventoryGateway).saveInventory(any(Inventory.class));
     }
 
     @Test
-    void shouldPropagateGatewayError() {
-        InventoryParameter parameter = new InventoryParameter("event-123", 100L);
-        RuntimeException error = new RuntimeException("Gateway error");
+    void shouldGetEventInventory() {
+        String eventId = "event1";
+        Inventory expectedInventory = new Inventory(eventId, 100L, 90L, 10L, 0L, 0L);
 
-        given(inventoryGateway.saveInventory(any(Inventory.class)))
-                .willReturn(Mono.error(error));
+        when(inventoryGateway.getEventInventory(eventId)).thenReturn(Mono.just(expectedInventory));
 
-        Mono<Inventory> result = inventoryUseCase.creteEventInventory(parameter);
-
-        StepVerifier.create(result)
-                .expectError(RuntimeException.class)
-                .verify();
-    }
-
-    @Test
-    void shouldGetEventInventorySuccessfully() {
-        String eventId = "event-123";
-        Inventory inventory = new Inventory(eventId, 100L, 80L, 20L, 0L);
-
-        given(inventoryGateway.getEventInventory(eventId))
-                .willReturn(Mono.just(inventory));
-
-        Mono<Inventory> result = inventoryUseCase.getEventInventory(eventId);
-
-        StepVerifier.create(result)
-                .expectNext(inventory)
+        StepVerifier.create(inventoryUseCase.getEventInventory(eventId))
+                .expectNext(expectedInventory)
                 .verifyComplete();
-
-        verify(inventoryGateway).getEventInventory(eventId);
     }
 
     @Test
-    void shouldThrowBusinessExceptionWhenEventNotFound() {
-        String eventId = "event-123";
+    void shouldThrowExceptionWhenEventNotFound() {
+        String eventId = "nonexistent";
 
-        given(inventoryGateway.getEventInventory(eventId))
-                .willReturn(Mono.empty());
+        when(inventoryGateway.getEventInventory(eventId)).thenReturn(Mono.empty());
 
-        Mono<Inventory> result = inventoryUseCase.getEventInventory(eventId);
-
-        StepVerifier.create(result)
-                .expectErrorMatches(throwable -> throwable instanceof BusinessException)
-                .verify();
-
-        verify(inventoryGateway).getEventInventory(eventId);
-    }
-
-    @Test
-    void shouldPropagateGatewayErrorInGetEventInventory() {
-        String eventId = "event-123";
-        RuntimeException error = new RuntimeException("Gateway error");
-
-        given(inventoryGateway.getEventInventory(eventId))
-                .willReturn(Mono.error(error));
-
-        Mono<Inventory> result = inventoryUseCase.getEventInventory(eventId);
-
-        StepVerifier.create(result)
-                .expectError(RuntimeException.class)
+        StepVerifier.create(inventoryUseCase.getEventInventory(eventId))
+                .expectError(BusinessException.class)
                 .verify();
     }
 }

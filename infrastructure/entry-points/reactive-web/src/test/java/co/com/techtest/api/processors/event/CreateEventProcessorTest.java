@@ -1,6 +1,7 @@
 package co.com.techtest.api.processors.event;
 
 import co.com.techtest.api.dto.request.event.CreateEventRequest;
+import co.com.techtest.model.event.Event;
 import co.com.techtest.model.util.enums.OperationType;
 import co.com.techtest.model.util.enums.TechnicalMessageType;
 import co.com.techtest.model.util.exception.BusinessException;
@@ -35,7 +36,7 @@ class CreateEventProcessorTest {
     }
 
     @Test
-    void shouldExecuteSuccessfullyWithValidRequest() {
+    void shouldBuildResponseSuccessWhenEventCreated() {
         CreateEventRequest validRequest = CreateEventRequest.builder()
                 .name("Test Event")
                 .place("Test Place")
@@ -44,13 +45,23 @@ class CreateEventProcessorTest {
                 .flowId("flow123")
                 .build();
 
-        when(createEventOrchestrator.createEvent(any())).thenReturn(Mono.empty());
+        Event event = Event.builder()
+                .id("event-123")
+                .name("Test Event")
+                .place("Test Place")
+                .date(LocalDateTime.now())
+                .capacity(100L)
+                .createdBy("user-123")
+                .createdAt(System.currentTimeMillis())
+                .build();
+
+        when(createEventOrchestrator.createEvent(any())).thenReturn(Mono.just(event));
 
         Mono<ServerResponse> result = createEventProcessor.execute(validRequest, OperationType.CREATE_EVENT);
 
         StepVerifier.create(result)
-                .expectComplete()
-                .verify();
+                .assertNext(response -> assertEquals(HttpStatus.CREATED, response.statusCode()))
+                .verifyComplete();
     }
 
     @Test

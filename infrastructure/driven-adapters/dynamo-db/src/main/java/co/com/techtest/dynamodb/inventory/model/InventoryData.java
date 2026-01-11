@@ -24,4 +24,7 @@ public class InventoryData {
 
     @Getter(onMethod_ = {@DynamoDbAttribute("sold")})
     private Long sold;
+
+    @Getter(onMethod_ = {@DynamoDbAttribute("complimentary")})
+    private Long complimentary;
 }

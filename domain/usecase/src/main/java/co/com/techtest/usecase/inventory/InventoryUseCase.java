@@ -25,6 +25,6 @@ public class InventoryUseCase {
     }
 
     private Inventory buildInventory(InventoryParameter inventoryParameter) {
-        return new Inventory(inventoryParameter.eventId(), inventoryParameter.capacity(), inventoryParameter.capacity(), 0L, 0L);
+        return new Inventory(inventoryParameter.eventId(), inventoryParameter.capacity(), inventoryParameter.capacity(), 0L, 0L, 0L);
     }
 }

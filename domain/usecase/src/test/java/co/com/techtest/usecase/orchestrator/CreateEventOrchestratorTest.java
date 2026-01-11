@@ -6,6 +6,7 @@ import co.com.techtest.model.inventory.Inventory;
 import co.com.techtest.model.inventory.InventoryParameter;
 import co.com.techtest.model.util.enums.TechnicalMessageType;
 import co.com.techtest.model.util.exception.BusinessException;
+import co.com.techtest.model.util.exception.TechnicalException;
 import co.com.techtest.usecase.event.EventUseCase;
 import co.com.techtest.usecase.inventory.InventoryUseCase;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +44,7 @@ class CreateEventOrchestratorTest {
     void shouldCreateEventSuccessfully() {
         EventParameter parameter = new EventParameter("Concert", LocalDateTime.now().plusDays(1), "Medellin", 100L, "user-123");
         Event event = new Event("event-123", "Concert", LocalDateTime.now().plusDays(1), "Medellin", 100L, "user-123", System.currentTimeMillis());
-        Inventory inventory = new Inventory("event-123", 100L, 100L, 0L, 0L);
+        Inventory inventory = new Inventory("event-123", 100L, 100L, 0L, 0L, 0L);
 
         given(eventUseCase.createEvent(parameter)).willReturn(Mono.just(event));
         given(inventoryUseCase.creteEventInventory(any(InventoryParameter.class))).willReturn(Mono.just(inventory));
@@ -88,6 +89,25 @@ class CreateEventOrchestratorTest {
 
         StepVerifier.create(orchestrator.createEvent(parameter))
                 .expectErrorMatches(BusinessException.class::isInstance)
+                .verify();
+
+        verify(eventUseCase).createEvent(parameter);
+        verify(inventoryUseCase).creteEventInventory(any(InventoryParameter.class));
+        verify(eventUseCase).deleteEvent(event);
+    }
+
+    @Test
+    void shouldDeleteEventAndPropagateTechnicalExceptionWhenInventoryCreationFailsWithTechnicalException() {
+        EventParameter parameter = new EventParameter("Concert", LocalDateTime.now().plusDays(1), "Medellin", 100L, "user-123");
+        Event event = new Event("event-123", "Concert", LocalDateTime.now().plusDays(1), "Medellin", 100L, "user-123", System.currentTimeMillis());
+        TechnicalException technicalError = new TechnicalException(TechnicalMessageType.ERROR_MS_INTERNAL_SERVER);
+
+        given(eventUseCase.createEvent(parameter)).willReturn(Mono.just(event));
+        given(inventoryUseCase.creteEventInventory(any(InventoryParameter.class))).willReturn(Mono.error(technicalError));
+        given(eventUseCase.deleteEvent(event)).willReturn(Mono.just(event));
+
+        StepVerifier.create(orchestrator.createEvent(parameter))
+                .expectErrorMatches(TechnicalException.class::isInstance)
                 .verify();
 
         verify(eventUseCase).createEvent(parameter);

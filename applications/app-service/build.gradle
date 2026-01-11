@@ -1,20 +1,20 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
-	testImplementation 'com.tngtech.archunit:archunit:1.4.1'
+    testImplementation 'com.tngtech.archunit:archunit:1.4.1'
     //INFRASTRUCTURE
     //ENTRY-POINT
-	implementation project(':reactive-web')
-	implementation project(':sqs-listener')
+    implementation project(':reactive-web')
+    implementation project(':sqs-listener')
 
     //DRIVEN-ADAPTER
-	implementation project(':dynamo-db')
-	implementation project(':sqs-sender')
+    implementation project(':dynamo-db')
+    implementation project(':sqs-sender')
 
     //HELPER
-	implementation project(':validator')
-	implementation project(':metrics')
-	implementation project(':parser')
+    implementation project(':validator')
+    implementation project(':metrics')
+    implementation project(':parser')
 
     //DOMAIN
     implementation project(':model')
@@ -26,7 +26,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aspectj'
 
     //MAPPER
-	implementation "org.reactivecommons.utils:object-mapper:${objectMapperVersion}"
+    implementation "org.reactivecommons.utils:object-mapper:${objectMapperVersion}"
 
     //ARCHITECTURE
     testImplementation "com.tngtech.archunit:archunit:${archunitVersion}"

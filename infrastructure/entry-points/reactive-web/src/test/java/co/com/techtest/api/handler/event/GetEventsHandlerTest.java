@@ -3,6 +3,8 @@ package co.com.techtest.api.handler.event;
 import co.com.techtest.api.dto.request.event.GetEventRequestParams;
 import co.com.techtest.api.processors.event.GetEventsProcessor;
 import co.com.techtest.model.util.enums.OperationType;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +48,19 @@ class GetEventsHandlerTest {
 
         StepVerifier.create(result)
                 .assertNext(response -> assertEquals(HttpStatus.OK, response.statusCode()))
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldHandleFallbackWithCallNotPermittedException() {
+        ServerRequest serverRequest = MockServerRequest.builder().build();
+        CircuitBreaker circuitBreaker = CircuitBreaker.ofDefaults("getEvents");
+        CallNotPermittedException exception = CallNotPermittedException.createCallNotPermittedException(circuitBreaker);
+
+        Mono<ServerResponse> result = getEventsHandler.fallback(serverRequest, exception);
+
+        StepVerifier.create(result)
+                .assertNext(response -> assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.statusCode()))
                 .verifyComplete();
     }
 

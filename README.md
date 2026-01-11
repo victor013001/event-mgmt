@@ -20,8 +20,8 @@ locally with LocalStack.
 - Create event
 - Get events by place (using DynamoDB Query with GSI)
 - Get real-time availability by event
-- Place order (reserve tickets)
-- Get order status
+- Place ticket (reserve tickets)
+- Get ticket status
 - Asynchronous purchase processing via SQS consumer
 - Automatic release of expired reservations via scheduler
 - Concurrency control to prevent overselling
@@ -49,15 +49,19 @@ locally with LocalStack.
 
 ### Purchase Flow
 
-1. Client calls the place order endpoint
-2. Service reserves inventory using a DynamoDB conditional update
-3. Service creates an order with status RESERVED and an expiration timestamp
-4. Service publishes the orderId to SQS
-5. SQS consumer processes the order asynchronously
-6. If still valid, order transitions to SOLD or COMPLIMENTARY and inventory is finalized
-7. Scheduler periodically releases expired reservations
+1. Client calls the place ticket endpoint
+2. Service atomically creates ticket and reserves inventory using DynamoDB TransactWriteItems with conditional
+   expressions
+3. Ticket is created with status RESERVED and an expiration timestamp (10 minutes)
+4. Service publishes payment event to SQS with the ticket ID
+5. Ticket status transitions to PENDING_CONFIRMATION after SQS publish
+6. SQS consumer processes the payment asynchronously
+7. If payment is successful, ticket transitions to SOLD and inventory is finalized
+8. Scheduler periodically releases expired reservations
 
-### Order State Machine
+**Note**: For complimentary tickets, a coupon validation system is planned to bypass payment processing.
+
+### Ticket State Machine
 
 - RESERVED
 - PENDING_CONFIRMATION
@@ -70,6 +74,13 @@ locally with LocalStack.
 
 Base path depends on your configuration. Examples below assume /api.
 
+### Required Headers
+
+All API requests require the following headers:
+
+- `X-User-Id`: User identifier provided by API Gateway
+- `flow-id`: Flow identifier for tracing across SQS and other services
+
 ### Events
 
 - POST /api/v1/event
@@ -77,10 +88,10 @@ Base path depends on your configuration. Examples below assume /api.
 - GET /api/v1/event?place={place} (Query events by place using GSI)
 - GET /api/v1/event/{eventId}/availability
 
-### Orders
+### Tickets
 
-- POST /api/orders
-- GET /api/orders/{orderId}
+- POST /api/v1/event/{eventId}/ticket
+- GET /api/v1/ticket/{ticketId}
 
 ### Observability
 
@@ -105,11 +116,13 @@ The service uses DynamoDB Query operations instead of Scan for better performanc
 
 ## Concurrency Control
 
-This service prevents overselling using DynamoDB conditional writes:
+This service prevents overselling using DynamoDB TransactWriteItems with conditional expressions:
 
-- Reservation step updates inventory only if available >= qty
-- Finalization step is idempotent and safely transitions order status
-- The SQS consumer is designed with at-least-once semantics in mind (duplicate messages are handled)
+- **Atomic Operations**: Ticket creation and inventory reservation happen atomically in a single transaction
+- **Conditional Updates**: Inventory is reserved only if `available >= quantity` using condition expressions
+- **Transaction Safety**: If any part of the transaction fails, the entire operation is rolled back
+- **Idempotent Operations**: Finalization steps are designed to handle duplicate processing
+- **SQS At-Least-Once**: The SQS consumer handles duplicate messages gracefully
 
 ## Local Setup
 
@@ -130,9 +143,9 @@ AWS_ENDPOINT=http://localstack:4566
 
 DYNAMO_EVENTS_TABLE=events
 DYNAMO_INVENTORY_TABLE=inventory
-DYNAMO_ORDERS_TABLE=orders
+DYNAMO_TICKETS_TABLE=tickets
 
-SQS_QUEUE_URL=http://localstack:4566/000000000000/orders-queue
+SQS_QUEUE_URL=http://localstack:4566/000000000000/tickets-queue
 SQS_ENDPOINT=http://localstack:4566
 ```
 

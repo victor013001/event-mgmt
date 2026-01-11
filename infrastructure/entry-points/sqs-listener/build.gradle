@@ -4,6 +4,7 @@ dependencies {
     implementation project(':usecase')
 
     //INFRASTRUCTURE - HELPER
+    implementation project(':parser')
 
     //SPRING
     implementation 'org.springframework.boot:spring-boot-starter'
