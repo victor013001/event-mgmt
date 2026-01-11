@@ -24,6 +24,10 @@ public class EventUseCase {
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new BusinessException(TechnicalMessageType.ERROR_MS_INVALID_EVENT))));
     }
 
+    public Mono<Event> deleteEvent(Event event) {
+        return eventGateway.deleteEvent(event);
+    }
+
     private boolean isValidEventParameter(EventParameter eventParameter) {
         return eventParameter.date().isAfter(LocalDateTime.now());
     }

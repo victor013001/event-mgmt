@@ -89,16 +89,29 @@ class EventUseCaseTest {
     }
 
     @Test
-    void createEvent_gatewayReturnsError_shouldPropagateError() {
-        var param = validParam();
-        RuntimeException gatewayError = new RuntimeException("dynamo down");
+    void deleteEvent_success() {
+        var event = new Event("event-123", "Concert", LocalDateTime.now().plusMinutes(5), "Medellin", 100L, "user-123", System.currentTimeMillis());
 
-        when(eventGateway.saveEvent(any(Event.class))).thenReturn(Mono.error(gatewayError));
+        when(eventGateway.deleteEvent(event)).thenReturn(Mono.just(event));
 
-        StepVerifier.create(eventUseCase.createEvent(param))
+        StepVerifier.create(eventUseCase.deleteEvent(event))
+                .expectNext(event)
+                .verifyComplete();
+
+        verify(eventGateway).deleteEvent(event);
+    }
+
+    @Test
+    void deleteEvent_gatewayReturnsError_shouldPropagateError() {
+        var event = new Event("event-123", "Concert", LocalDateTime.now().plusMinutes(5), "Medellin", 100L, "user-123", System.currentTimeMillis());
+        RuntimeException gatewayError = new RuntimeException("delete failed");
+
+        when(eventGateway.deleteEvent(event)).thenReturn(Mono.error(gatewayError));
+
+        StepVerifier.create(eventUseCase.deleteEvent(event))
                 .expectErrorSatisfies(ex -> assertSame(gatewayError, ex))
                 .verify();
 
-        verify(eventGateway).saveEvent(any(Event.class));
+        verify(eventGateway).deleteEvent(event);
     }
 }

@@ -36,6 +36,13 @@ public class EventDynamoAdapter implements EventGateway {
     private static final String GET_EVENTS_BY_PLACE_ERROR_RESPONSE = "Get Event By Place Dynamo Adapter Error Response";
     private static final String GET_EVENTS_BY_PLACE_KEY_ERROR_RESPONSE = "getEventsByPlaceDynamoAdapterErrorRS";
 
+    private static final String DELETE_EVENT_REQUEST = "Delete Event Dynamo Adapter";
+    private static final String DELETE_EVENT_KEY_REQUEST = "deleteEventDynamoAdapterRQ";
+    private static final String DELETE_EVENT_RESPONSE = "Delete Event Dynamo Adapter Response";
+    private static final String DELETE_EVENT_KEY_RESPONSE = "deleteEventDynamoAdapterRS";
+    private static final String DELETE_EVENT_ERROR_RESPONSE = "Delete Event Dynamo Adapter Error Response";
+    private static final String DELETE_EVENT_KEY_ERROR_RESPONSE = "deleteEventDynamoAdapterErrorRS";
+
     @Override
     public Mono<Event> saveEvent(Event event) {
         return eventRepository.save(event)
@@ -51,6 +58,15 @@ public class EventDynamoAdapter implements EventGateway {
                 .doOnSubscribe(_ -> log.info(GET_EVENTS_BY_PLACE_REQUEST, kv(GET_EVENTS_BY_PLACE_KEY_REQUEST, place)))
                 .doOnNext(events -> log.info(GET_EVENTS_BY_PLACE_RESPONSE, kv(GET_EVENTS_BY_PLACE_KEY_RESPONSE, events)))
                 .doOnError(error -> log.error(GET_EVENTS_BY_PLACE_ERROR_RESPONSE, kv(GET_EVENTS_BY_PLACE_KEY_ERROR_RESPONSE, error)))
+                .onErrorMap(DynamoDbException.class, exception -> new TechnicalException(exception, TechnicalMessageType.ERROR_MS_DYNAMO_ERROR));
+    }
+
+    @Override
+    public Mono<Event> deleteEvent(Event event) {
+        return eventRepository.delete(event)
+                .doOnSubscribe(_ -> log.info(DELETE_EVENT_REQUEST, kv(DELETE_EVENT_KEY_REQUEST, event)))
+                .doOnNext(result -> log.info(DELETE_EVENT_RESPONSE, kv(DELETE_EVENT_KEY_RESPONSE, result)))
+                .doOnError(error -> log.error(DELETE_EVENT_ERROR_RESPONSE, kv(DELETE_EVENT_KEY_ERROR_RESPONSE, error)))
                 .onErrorMap(DynamoDbException.class, exception -> new TechnicalException(exception, TechnicalMessageType.ERROR_MS_DYNAMO_ERROR));
     }
 }

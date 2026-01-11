@@ -4,7 +4,7 @@ import co.com.techtest.api.dto.request.event.CreateEventRequest;
 import co.com.techtest.api.mapper.EventApiMapper;
 import co.com.techtest.model.util.enums.OperationType;
 import co.com.techtest.model.util.exception.BusinessException;
-import co.com.techtest.usecase.event.EventUseCase;
+import co.com.techtest.usecase.orchestrator.CreateEventOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ import static co.com.techtest.api.utils.validator.event.CreateEventValidator.val
 @RequiredArgsConstructor
 public class CreateEventProcessor {
 
-    private final EventUseCase eventUseCase;
+    private final CreateEventOrchestrator createEventOrchestrator;
 
     public Mono<ServerResponse> execute(CreateEventRequest createEventRequest, OperationType operationType) {
         return validateCreateEventRequest(createEventRequest)
@@ -36,7 +36,7 @@ public class CreateEventProcessor {
     }
 
     private Mono<ServerResponse> executeUseCase(CreateEventRequest createEventRequest, OperationType operationType) {
-        return eventUseCase.createEvent(EventApiMapper.MAPPER.toParameter(createEventRequest))
+        return createEventOrchestrator.createEvent(EventApiMapper.MAPPER.toParameter(createEventRequest))
                 .map(EventApiMapper.MAPPER::toResponse)
                 .flatMap(eventResponse -> buildResponseSuccess(eventResponse, operationType, createEventRequest.flowId()))
                 .onErrorResume(BusinessException.class, error -> buildResponseBusinessError(error, operationType, createEventRequest.flowId()));

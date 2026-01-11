@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -99,6 +100,36 @@ class EventDynamoAdapterTest {
                     return true;
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void shouldDeleteEventSuccessfully() {
+        Event event = new Event("event-123", "Test Event", LocalDateTime.now(), "Test Place", 100L, "user123", System.currentTimeMillis());
+
+        when(eventRepository.delete(event)).thenReturn(Mono.just(event));
+
+        Mono<Event> result = eventDynamoAdapter.deleteEvent(event);
+
+        StepVerifier.create(result)
+                .expectNext(event)
+                .verifyComplete();
+
+        verify(eventRepository).delete(event);
+    }
+
+    @Test
+    void shouldHandleDynamoDbExceptionInDeleteEvent() {
+        Event event = new Event("event-123", "Test Event", LocalDateTime.now(), "Test Place", 100L, "user123", System.currentTimeMillis());
+
+        when(eventRepository.delete(event))
+                .thenReturn(Mono.error(DynamoDbException.builder().message("DynamoDB error").build()));
+
+        Mono<Event> result = eventDynamoAdapter.deleteEvent(event);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable -> throwable instanceof TechnicalException &&
+                        ((TechnicalException) throwable).getTechnicalMessage() == TechnicalMessageType.ERROR_MS_DYNAMO_ERROR)
+                .verify();
     }
 
     @Test

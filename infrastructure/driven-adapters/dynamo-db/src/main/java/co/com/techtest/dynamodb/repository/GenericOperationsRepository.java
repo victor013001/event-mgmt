@@ -38,9 +38,13 @@ public abstract class GenericOperationsRepository<E, K, V> {
         return Mono.fromFuture(table.putItem(toData(model))).thenReturn(model);
     }
 
+    public Mono<E> delete(E model) {
+        return Mono.fromFuture(table.deleteItem(toData(model))).map(this::toDomain);
+    }
+
     public Mono<E> getById(K id) {
         return Mono.fromFuture(table.getItem(r -> r.key(k -> k.partitionValue(String.valueOf(id)))))
-            .flatMap(v -> Objects.isNull(v) ? Mono.empty() : Mono.just(toDomain(v)));
+                .flatMap(v -> Objects.isNull(v) ? Mono.empty() : Mono.just(toDomain(v)));
     }
 
     public Mono<List<E>> query(QueryEnhancedRequest queryExpression) {

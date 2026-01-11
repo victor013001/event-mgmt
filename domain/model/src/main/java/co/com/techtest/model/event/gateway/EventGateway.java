@@ -9,4 +9,6 @@ public interface EventGateway {
     Mono<Event> saveEvent(Event event);
 
     Mono<List<Event>> findEventsByPlace(String place);
+
+    Mono<Event> deleteEvent(Event event);
 }

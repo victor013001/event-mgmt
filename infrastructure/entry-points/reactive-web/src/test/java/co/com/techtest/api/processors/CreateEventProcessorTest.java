@@ -4,7 +4,7 @@ import co.com.techtest.api.dto.request.event.CreateEventRequest;
 import co.com.techtest.model.util.enums.OperationType;
 import co.com.techtest.model.util.enums.TechnicalMessageType;
 import co.com.techtest.model.util.exception.BusinessException;
-import co.com.techtest.usecase.event.EventUseCase;
+import co.com.techtest.usecase.orchestrator.CreateEventOrchestrator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,13 +25,13 @@ import static org.mockito.Mockito.when;
 class CreateEventProcessorTest {
 
     @Mock
-    private EventUseCase eventUseCase;
+    private CreateEventOrchestrator createEventOrchestrator;
 
     private CreateEventProcessor createEventProcessor;
 
     @BeforeEach
     void setUp() {
-        createEventProcessor = new CreateEventProcessor(eventUseCase);
+        createEventProcessor = new CreateEventProcessor(createEventOrchestrator);
     }
 
     @Test
@@ -44,7 +44,7 @@ class CreateEventProcessorTest {
                 .flowId("flow123")
                 .build();
 
-        when(eventUseCase.createEvent(any())).thenReturn(Mono.empty());
+        when(createEventOrchestrator.createEvent(any())).thenReturn(Mono.empty());
 
         Mono<ServerResponse> result = createEventProcessor.execute(validRequest, OperationType.CREATE_EVENT);
 
@@ -80,7 +80,7 @@ class CreateEventProcessorTest {
                 .flowId("flow123")
                 .build();
 
-        when(eventUseCase.createEvent(any())).thenReturn(Mono.error(new BusinessException(TechnicalMessageType.ERROR_MS_INTERNAL_SERVER)));
+        when(createEventOrchestrator.createEvent(any())).thenReturn(Mono.error(new BusinessException(TechnicalMessageType.ERROR_MS_INTERNAL_SERVER)));
 
         Mono<ServerResponse> result = createEventProcessor.execute(validRequest, OperationType.CREATE_EVENT);
 

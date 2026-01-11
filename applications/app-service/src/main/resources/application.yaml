@@ -63,6 +63,8 @@ aws:
     endpoint: "http://localhost:8000"
     event:
       tableName: "event"
+    inventory:
+      tableName: "inventory"
 adapter:
   sqs:
     region: "us-east-1"
