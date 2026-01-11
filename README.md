@@ -72,10 +72,10 @@ Base path depends on your configuration. Examples below assume /api.
 
 ### Events
 
-- POST /api/events
-- GET /api/events
-- GET /api/events?place={place} (Query events by place using GSI)
-- GET /api/events/{eventId}/availability
+- POST /api/v1/event
+- GET /api/v1/event
+- GET /api/v1/event?place={place} (Query events by place using GSI)
+- GET /api/v1/event/{eventId}/availability
 
 ### Orders
 

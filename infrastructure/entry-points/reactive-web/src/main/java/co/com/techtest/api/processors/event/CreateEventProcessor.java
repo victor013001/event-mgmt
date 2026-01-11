@@ -1,4 +1,4 @@
-package co.com.techtest.api.processors;
+package co.com.techtest.api.processors.event;
 
 import co.com.techtest.api.dto.request.event.CreateEventRequest;
 import co.com.techtest.api.mapper.EventApiMapper;

@@ -2,6 +2,7 @@ package co.com.techtest.api;
 
 import co.com.techtest.api.handler.event.CreateEventHandler;
 import co.com.techtest.api.handler.event.GetEventsHandler;
+import co.com.techtest.api.handler.inventory.GetEventAvailabilityHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,13 +25,16 @@ class RouterRestTest {
     @Mock
     private GetEventsHandler getEventsHandler;
 
+    @Mock
+    private GetEventAvailabilityHandler getEventAvailabilityHandler;
+
     private WebTestClient webTestClient;
     private RouterRest routerRest;
 
     @BeforeEach
     void setUp() {
         routerRest = new RouterRest();
-        RouterFunction<ServerResponse> routerFunction = routerRest.routerFunction(createEventHandler, getEventsHandler);
+        RouterFunction<ServerResponse> routerFunction = routerRest.routerFunction(createEventHandler, getEventsHandler, getEventAvailabilityHandler);
         webTestClient = WebTestClient.bindToRouterFunction(routerFunction).build();
     }
 
@@ -121,6 +125,27 @@ class RouterRestTest {
                 .uri("/api/v1/event")
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+
+    @Test
+    void testGetEventAvailabilityEndpoint() {
+        when(getEventAvailabilityHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Availability retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/event/event-123/availability")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testGetEventAvailabilityEndpointWithoutHeaders() {
+        webTestClient.get()
+                .uri("/api/v1/event/event-123/availability")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     @Test

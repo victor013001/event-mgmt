@@ -58,4 +58,35 @@ class InventoryDynamoAdapterTest {
                         ((TechnicalException) throwable).getTechnicalMessage() == TechnicalMessageType.ERROR_MS_DYNAMO_ERROR)
                 .verify();
     }
+
+    @Test
+    void shouldGetEventInventorySuccessfully() {
+        String eventId = "event-123";
+        Inventory inventory = new Inventory(eventId, 100L, 80L, 20L, 0L);
+
+        given(inventoryRepository.getById(eventId)).willReturn(Mono.just(inventory));
+
+        Mono<Inventory> result = inventoryDynamoAdapter.getEventInventory(eventId);
+
+        StepVerifier.create(result)
+                .expectNext(inventory)
+                .verifyComplete();
+
+        verify(inventoryRepository).getById(eventId);
+    }
+
+    @Test
+    void shouldHandleDynamoDbExceptionInGetEventInventory() {
+        String eventId = "event-123";
+
+        given(inventoryRepository.getById(eventId))
+                .willReturn(Mono.error(DynamoDbException.builder().message("DynamoDB error").build()));
+
+        Mono<Inventory> result = inventoryDynamoAdapter.getEventInventory(eventId);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable -> throwable instanceof TechnicalException &&
+                        ((TechnicalException) throwable).getTechnicalMessage() == TechnicalMessageType.ERROR_MS_DYNAMO_ERROR)
+                .verify();
+    }
 }

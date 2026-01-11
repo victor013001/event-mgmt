@@ -14,8 +14,10 @@ public enum TechnicalMessageType {
     ERROR_MS_INVALID_CAPACITY("VAL004", 400, "The capacity has to be greater than 0.", TechnicalMessageType.BAD_REQUEST_MSG),
     ERROR_MS_INVALID_FLOW_ID("VAL005", 400, "The flow id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
     ERROR_MS_INVALID_X_USER_ID("VAL006", 400, "The x user id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
-    ERROR_MS_INVALID_EVENT("VAL005", 400, "The event is not valid.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_EVENT("VAL007", 400, "The event is not valid.", TechnicalMessageType.BAD_REQUEST_MSG),
     ERROR_MS_INVALID_HEADERS("H-001", 400, "The headers are invalid.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_INVALID_EVENT_ID("VAL008", 400, "The event id is required.", TechnicalMessageType.BAD_REQUEST_MSG),
+    ERROR_MS_EVENT_NOT_FOUND("VAL009", 404, "The event was not found.", TechnicalMessageType.NOT_FOUND_MSG),
 
     //MS ERRORS
     ERROR_MS_INTERNAL_SERVER("500", 500, TechnicalMessageType.INTERNAL_SERVER_MSG, TechnicalMessageType.INTERNAL_SERVER_MSG),
@@ -34,4 +36,5 @@ public enum TechnicalMessageType {
     private static final String BAD_REQUEST_MSG = "The request could not be processed due to invalid or incomplete data.";
     private static final String INTERNAL_SERVER_MSG = "An unexpected server error occurred. Please try again later.";
     private static final String SUCCESS_MSG = "SUCCESS";
+    private static final String NOT_FOUND_MSG = "The provided data was not found.";
 }

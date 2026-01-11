@@ -2,7 +2,7 @@ package co.com.techtest.api.handler.event;
 
 import co.com.techtest.api.dto.request.event.GetEventRequestParams;
 import co.com.techtest.api.dto.request.standardstructure.HeaderRequest;
-import co.com.techtest.api.processors.GetEventsProcessor;
+import co.com.techtest.api.processors.event.GetEventsProcessor;
 import co.com.techtest.model.util.enums.OperationType;
 import co.com.techtest.model.util.enums.TechnicalMessageType;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;

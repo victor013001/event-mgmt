@@ -5,4 +5,6 @@ import reactor.core.publisher.Mono;
 
 public interface InventoryGateway {
     Mono<Inventory> saveInventory(Inventory inventory);
+
+    Mono<Inventory> getEventInventory(String eventId);
 }

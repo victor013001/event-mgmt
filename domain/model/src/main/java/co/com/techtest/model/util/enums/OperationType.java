@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OperationType {
     CREATE_EVENT("createEvent", "/api/v1/event", "Create Event Request", "createEventRQ", "Create Event Response", "createEventRS"),
-    GET_EVENTS("getEvent", "/api/v1/event", "Get Events Request", "getEventsRQ", "Get Event Response", "getEventsRS");
+    GET_EVENTS("getEvent", "/api/v1/event", "Get Events Request", "getEventsRQ", "Get Event Response", "getEventsRS"),
+    GET_EVENT_AVAILABILITY("getEventAvailability", "/api/v1/event/{eventId}/availability", "Get Event Availability Request", "getEventAvailabilityRQ",
+            "Get Event Availability Response", "getEventAvailabilityRS");
 
     private final String name;
     private final String path;

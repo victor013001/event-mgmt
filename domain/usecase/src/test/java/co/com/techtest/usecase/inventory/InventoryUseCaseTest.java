@@ -3,6 +3,7 @@ package co.com.techtest.usecase.inventory;
 import co.com.techtest.model.inventory.Inventory;
 import co.com.techtest.model.inventory.InventoryParameter;
 import co.com.techtest.model.inventory.gateway.InventoryGateway;
+import co.com.techtest.model.util.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +63,54 @@ class InventoryUseCaseTest {
                 .willReturn(Mono.error(error));
 
         Mono<Inventory> result = inventoryUseCase.creteEventInventory(parameter);
+
+        StepVerifier.create(result)
+                .expectError(RuntimeException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldGetEventInventorySuccessfully() {
+        String eventId = "event-123";
+        Inventory inventory = new Inventory(eventId, 100L, 80L, 20L, 0L);
+
+        given(inventoryGateway.getEventInventory(eventId))
+                .willReturn(Mono.just(inventory));
+
+        Mono<Inventory> result = inventoryUseCase.getEventInventory(eventId);
+
+        StepVerifier.create(result)
+                .expectNext(inventory)
+                .verifyComplete();
+
+        verify(inventoryGateway).getEventInventory(eventId);
+    }
+
+    @Test
+    void shouldThrowBusinessExceptionWhenEventNotFound() {
+        String eventId = "event-123";
+
+        given(inventoryGateway.getEventInventory(eventId))
+                .willReturn(Mono.empty());
+
+        Mono<Inventory> result = inventoryUseCase.getEventInventory(eventId);
+
+        StepVerifier.create(result)
+                .expectErrorMatches(throwable -> throwable instanceof BusinessException)
+                .verify();
+
+        verify(inventoryGateway).getEventInventory(eventId);
+    }
+
+    @Test
+    void shouldPropagateGatewayErrorInGetEventInventory() {
+        String eventId = "event-123";
+        RuntimeException error = new RuntimeException("Gateway error");
+
+        given(inventoryGateway.getEventInventory(eventId))
+                .willReturn(Mono.error(error));
+
+        Mono<Inventory> result = inventoryUseCase.getEventInventory(eventId);
 
         StepVerifier.create(result)
                 .expectError(RuntimeException.class)
