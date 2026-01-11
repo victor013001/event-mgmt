@@ -2,12 +2,14 @@ package co.com.techtest.sqs.listener.helper;
 
 import co.com.techtest.sqs.listener.SQSProcessor;
 import co.com.techtest.sqs.listener.config.SQSProperties;
+import co.com.techtest.sqs.listener.handler.purchase.PurchaseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
@@ -26,7 +28,11 @@ class SQSListenerTest {
     @Mock
     private SqsAsyncClient asyncClient;
 
+    @Mock
+    private PurchaseHandler purchaseHandler;
+
     private SQSProperties sqsProperties;
+    private SQSListener sqsListener;
 
     @BeforeEach
     void setUp() {
@@ -42,26 +48,30 @@ class SQSListenerTest {
                 1
         );
 
-        var message = Message.builder().body("message").build();
-        var deleteMessageResponse = DeleteMessageResponse.builder().build();
-        var messageResponse = ReceiveMessageResponse.builder().messages(message).build();
+        Message message = Message.builder().body("message").build();
+        DeleteMessageResponse deleteMessageResponse = DeleteMessageResponse.builder().build();
+        ReceiveMessageResponse messageResponse = ReceiveMessageResponse.builder().messages(message).build();
 
         when(asyncClient.receiveMessage(any(ReceiveMessageRequest.class)))
                 .thenReturn(CompletableFuture.completedFuture(messageResponse));
         when(asyncClient.deleteMessage(any(DeleteMessageRequest.class)))
                 .thenReturn(CompletableFuture.completedFuture(deleteMessageResponse));
+        when(purchaseHandler.handle(any(Message.class)))
+                .thenReturn(Mono.empty());
+
+        sqsListener = SQSListener.builder()
+                .client(asyncClient)
+                .properties(sqsProperties)
+                .processor(new SQSProcessor(purchaseHandler))
+                .operation("operation")
+                .build();
     }
 
     @Test
-    void listenerTest() {
-        var sqsListener = SQSListener.builder()
-                .client(asyncClient)
-                .properties(sqsProperties)
-                .processor(new SQSProcessor())
-                .operation("operation")
-                .build();
-
+    void shouldListenToSQSMessages() {
         Flux<Void> flow = ReflectionTestUtils.invokeMethod(sqsListener, "listen");
-        StepVerifier.create(flow).verifyComplete();
+
+        StepVerifier.create(flow)
+                .verifyComplete();
     }
 }

@@ -7,4 +7,7 @@ dependencies {
 
     //UTIL
     implementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
+    
+    //LOGGING
+    implementation 'org.slf4j:slf4j-api'
 }

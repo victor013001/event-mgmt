@@ -1,0 +1,112 @@
+{
+	"info": {
+		"_postman_id": "aa3ee299-a79f-4526-b5ae-87eb67691604",
+		"name": "Tech Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49006225",
+		"_collection_link": "https://spaceflight-observer-11090955-2098763.postman.co/workspace/Victor-Manuel-Osorio-Garcia's-W~9c7ba371-4312-42de-81de-1030596e09a0/collection/49006225-aa3ee299-a79f-4526-b5ae-87eb67691604?action=share&source=collection_link&creator=49006225"
+	},
+	"item": [
+		{
+			"name": "CREATE EVENT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Get Event Id\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.collectionVariables.set(\"eventId\", jsonData.data.id);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{X-User-Id}}",
+						"type": "text"
+					},
+					{
+						"key": "flowId",
+						"value": "{{flowId}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Test Event\",\r\n    \"place\": \"Medellin\",\r\n    \"date\": \"2026-03-15T14:30:00\",\r\n    \"capacity\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/v1/event",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"event"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": ""
+		},
+		{
+			"key": "X-User-Id",
+			"value": ""
+		},
+		{
+			"key": "flowId",
+			"value": ""
+		},
+		{
+			"key": "eventId",
+			"value": ""
+		},
+		{
+			"key": "place",
+			"value": ""
+		}
+	]
+}

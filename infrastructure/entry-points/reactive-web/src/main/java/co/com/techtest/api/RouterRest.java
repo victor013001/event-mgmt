@@ -1,25 +1,40 @@
 package co.com.techtest.api;
 
-import org.springdoc.core.annotations.RouterOperation;
-import org.springdoc.core.annotations.RouterOperations;
+import co.com.techtest.api.dto.request.event.CreateEventRequest;
+import co.com.techtest.api.dto.response.inventory.InventoryResponse;
+import co.com.techtest.api.dto.response.ticket.TicketResponse;
+import co.com.techtest.api.handler.event.CreateEventHandler;
+import co.com.techtest.api.handler.event.GetEventsHandler;
+import co.com.techtest.api.handler.inventory.GetEventAvailabilityHandler;
+import co.com.techtest.api.handler.ticket.GetTicketHandler;
+import co.com.techtest.api.handler.ticket.PlaceTicketHandler;
+import co.com.techtest.model.util.enums.OperationType;
+import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static co.com.techtest.api.utils.DocumentationUtilApi.document;
+import static co.com.techtest.api.utils.HeadersUtilApi.requireHeaders;
 
 @Configuration
 public class RouterRest {
-    @RouterOperations({ @RouterOperation(path = "/api/usecase/path", beanClass = Handler.class, beanMethod = "listenGETUseCase"),
-                @RouterOperation(path = "/api/usecase/otherpath", beanClass = Handler.class, beanMethod = "listenPOSTUseCase"),
-                @RouterOperation(path = "/api/otherusercase/path", beanClass = Handler.class, beanMethod = "listenGETOtherUseCase") })
     @Bean
-    public RouterFunction<ServerResponse> routerFunction(Handler handler) {
-        return route(GET("/api/usecase/path"), handler::listenGETUseCase)
-                .andRoute(POST("/api/usecase/otherpath"), handler::listenPOSTUseCase)
-                .and(route(GET("/api/otherusercase/path"), handler::listenGETOtherUseCase));
+    public RouterFunction<ServerResponse> routerFunction(CreateEventHandler createEventHandler, GetEventsHandler getEventsHandler,
+                                                         GetEventAvailabilityHandler getEventAvailabilityHandler,
+                                                         PlaceTicketHandler placeTicketHandler, GetTicketHandler getTicketHandler) {
+        return SpringdocRouteBuilder.route()
+                .POST(OperationType.CREATE_EVENT.getPath(), request -> requireHeaders(request, createEventHandler::handle),
+                        document(OperationType.CREATE_EVENT, CreateEventRequest.class))
+                .GET(OperationType.GET_EVENTS.getPath(), request -> requireHeaders(request, getEventsHandler::handle),
+                        document(OperationType.GET_EVENTS, Void.class))
+                .GET(OperationType.GET_EVENT_AVAILABILITY.getPath(), request -> requireHeaders(request, getEventAvailabilityHandler::handle),
+                        document(OperationType.GET_EVENT_AVAILABILITY, InventoryResponse.class))
+                .POST(OperationType.PLACE_EVENT_TICKET.getPath(), request -> requireHeaders(request, placeTicketHandler::handle),
+                        document(OperationType.PLACE_EVENT_TICKET, TicketResponse.class))
+                .GET(OperationType.GET_TICKET.getPath(), request -> requireHeaders(request, getTicketHandler::handle),
+                        document(OperationType.GET_TICKET, TicketResponse.class))
+                .build();
     }
 }

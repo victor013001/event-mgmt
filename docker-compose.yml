@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,sqs
+      - DEBUG=0
+      - AWS_DEFAULT_REGION=us-east-1
+      - LOCALSTACK_HOST=localstack:4566
+    volumes:
+      - ./docker/localstack/init/ready.d:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -sf http://localhost:4566/_localstack/health | grep -q running"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  eventmgmt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eventmgmt
+    depends_on:
+      localstack:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+
+      - ENTRYPOINT_SQS_REGION=us-east-1
+      - ENTRYPOINT_SQS_ENDPOINT=http://localstack:4566
+      - ENTRYPOINT_SQS_QUEUE_URL=http://localstack:4566/000000000000/tickets-queue
+      - ENTRYPOINT_SQS_WAIT_TIME_SECONDS=20
+      - ENTRYPOINT_SQS_MAX_NUMBER_OF_MESSAGES=10
+      - ENTRYPOINT_SQS_VISIBILITY_TIMEOUT_SECONDS=30
+      - ENTRYPOINT_SQS_NUMBER_OF_THREADS=1
+
+      - AWS_DYNAMODB_REGION=us-east-1
+      - AWS_DYNAMODB_ENDPOINT=http://localstack:4566
+      - AWS_DYNAMODB_EVENT_TABLE_NAME=events
+      - AWS_DYNAMODB_INVENTORY_TABLE_NAME=inventory
+      - AWS_DYNAMODB_TICKET_TABLE_NAME=tickets
+
+      - ADAPTER_SQS_REGION=us-east-1
+      - ADAPTER_SQS_ENDPOINT=http://localstack:4566
+      - ADAPTER_SQS_QUEUE_URL=http://localstack:4566/000000000000/tickets-queue
+
+      - SCHEDULER_TICKET_EXPIRATION_FIXED_DELAY=120000

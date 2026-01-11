@@ -15,6 +15,7 @@ dependencies {
 
     //LOGGING
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+    implementation "io.micrometer:micrometer-tracing"
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
