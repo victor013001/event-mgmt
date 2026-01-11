@@ -16,6 +16,8 @@ public class DocumentationUtilApi {
     private static final String EVENT_MGMT_MS_TAG = "eventmgmt";
     private static final String SUCCESS_DESCRIPTION = "Successful Operation";
     private static final String ERROR_DESCRIPTION = "Error Response";
+    private static final String NOT_FOUND_DESCRIPTION = "Resource Not Found";
+    private static final String FORBIDDEN_DESCRIPTION = "Access Forbidden";
 
     public static Consumer<Builder> document(OperationType operation, Class<?> clazz) {
         return ops -> ops.tag(EVENT_MGMT_MS_TAG)
@@ -31,6 +33,14 @@ public class DocumentationUtilApi {
                 .response(responseBuilder()
                         .responseCode("400")
                         .description(ERROR_DESCRIPTION)
+                        .implementation(StandardResponse.class)
+                ).response(responseBuilder()
+                        .responseCode("403")
+                        .description(FORBIDDEN_DESCRIPTION)
+                        .implementation(StandardResponse.class)
+                ).response(responseBuilder()
+                        .responseCode("404")
+                        .description(NOT_FOUND_DESCRIPTION)
                         .implementation(StandardResponse.class)
                 ).response(responseBuilder()
                         .responseCode("500")

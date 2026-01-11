@@ -11,7 +11,9 @@ public enum OperationType {
     GET_EVENT_AVAILABILITY("getEventAvailability", "/api/v1/event/{eventId}/availability", "Get Event Availability Request", "getEventAvailabilityRQ",
             "Get Event Availability Response", "getEventAvailabilityRS"),
     PLACE_EVENT_TICKET("placeEventTicket", "/api/v1/event/{eventId}/ticket", "Place Event Ticket Request", "placeEventTicketRQ",
-            "Place Event Ticket Response", "placeEventTicketRS");
+            "Place Event Ticket Response", "placeEventTicketRS"),
+    GET_TICKET("getTicket", "/api/v1/ticket/{ticketId}", "Get Ticket Request", "getTicketRQ",
+            "Get Ticket Response", "getTicketRS");
 
     private final String name;
     private final String path;

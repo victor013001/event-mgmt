@@ -6,7 +6,7 @@ buildscript {
 
         //ARCHITECTURE
         cleanArchitectureVersion = '4.0.5'
-        archunitVersion = '1.4.1'
+        archunitVersion = '1.4.0'
 
         //SPRING
         springBootVersion = '4.0.1'

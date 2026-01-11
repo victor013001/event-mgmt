@@ -21,7 +21,7 @@ locally with LocalStack.
 - Get events by place (using DynamoDB Query with GSI)
 - Get real-time availability by event
 - Place ticket (reserve tickets)
-- Get ticket status
+- Get ticket status (for X-User-Id user)
 - Asynchronous purchase processing via SQS consumer
 - Automatic release of expired reservations via scheduler
 - Concurrency control to prevent overselling

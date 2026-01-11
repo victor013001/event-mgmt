@@ -3,35 +3,215 @@ package co.com.techtest.api;
 import co.com.techtest.api.handler.event.CreateEventHandler;
 import co.com.techtest.api.handler.event.GetEventsHandler;
 import co.com.techtest.api.handler.inventory.GetEventAvailabilityHandler;
+import co.com.techtest.api.handler.ticket.GetTicketHandler;
 import co.com.techtest.api.handler.ticket.PlaceTicketHandler;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RouterRestTest {
 
     @Mock
     private CreateEventHandler createEventHandler;
+
     @Mock
     private GetEventsHandler getEventsHandler;
+
     @Mock
     private GetEventAvailabilityHandler getEventAvailabilityHandler;
+
     @Mock
     private PlaceTicketHandler placeTicketHandler;
 
+    @Mock
+    private GetTicketHandler getTicketHandler;
+
+    private WebTestClient webTestClient;
+    private RouterRest routerRest;
+
+    @BeforeEach
+    void setUp() {
+        routerRest = new RouterRest();
+        RouterFunction<ServerResponse> routerFunction = routerRest.routerFunction(createEventHandler, getEventsHandler, getEventAvailabilityHandler,
+                placeTicketHandler, getTicketHandler);
+        webTestClient = WebTestClient.bindToRouterFunction(routerFunction).build();
+    }
+
     @Test
-    void shouldCreateRouterFunction() {
-        RouterRest routerRest = new RouterRest();
+    void testCreateEventEndpoint() {
+        when(createEventHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Event created"));
 
-        RouterFunction<ServerResponse> routerFunction = routerRest.routerFunction(
-                createEventHandler, getEventsHandler, getEventAvailabilityHandler, placeTicketHandler);
+        webTestClient.post()
+                .uri("/api/v1/event")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"name\":\"Test Event\"}")
+                .exchange()
+                .expectStatus().isOk();
+    }
 
-        assertNotNull(routerFunction);
+    @Test
+    void testGetEventsEndpoint() {
+        when(getEventsHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Events retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/event?place=Test Place")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testGetEventsEndpointWithoutPlace() {
+        when(getEventsHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("All events retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/event")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testCreateEventEndpointWithoutHeaders() {
+        webTestClient.post()
+                .uri("/api/v1/event")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"name\":\"Test Event\"}")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetEventsEndpointWithoutHeaders() {
+        webTestClient.get()
+                .uri("/api/v1/event")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testCreateEventEndpointWithMissingUserId() {
+        webTestClient.post()
+                .uri("/api/v1/event")
+                .header("flowId", "flow123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"name\":\"Test Event\"}")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testCreateEventEndpointWithMissingFlowId() {
+        webTestClient.post()
+                .uri("/api/v1/event")
+                .header("X-User-Id", "user123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"name\":\"Test Event\"}")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testUnsupportedMethod() {
+        webTestClient.put()
+                .uri("/api/v1/event")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void testGetEventAvailabilityEndpoint() {
+        when(getEventAvailabilityHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Availability retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/event/event-123/availability")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testGetEventAvailabilityEndpointWithoutHeaders() {
+        webTestClient.get()
+                .uri("/api/v1/event/event-123/availability")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testInvalidPath() {
+        webTestClient.post()
+                .uri("/api/v1/invalid")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"name\":\"Test Event\"}")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void testPlaceTicketEndpoint() {
+        when(placeTicketHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Ticket placed"));
+
+        webTestClient.post()
+                .uri("/api/v1/event/event-123/ticket")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"quantity\":2}")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testPlaceTicketEndpointWithoutHeaders() {
+        webTestClient.post()
+                .uri("/api/v1/event/event-123/ticket")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"quantity\":2}")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void testGetTicketEndpoint() {
+        when(getTicketHandler.handle(any()))
+                .thenReturn(ServerResponse.ok().bodyValue("Ticket retrieved"));
+
+        webTestClient.get()
+                .uri("/api/v1/ticket/ticket-123")
+                .header("X-User-Id", "user123")
+                .header("flowId", "flow123")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void testGetTicketEndpointWithoutHeaders() {
+        webTestClient.get()
+                .uri("/api/v1/ticket/ticket-123")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

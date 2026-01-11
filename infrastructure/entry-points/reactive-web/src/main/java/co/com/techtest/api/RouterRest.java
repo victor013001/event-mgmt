@@ -6,6 +6,7 @@ import co.com.techtest.api.dto.response.ticket.TicketResponse;
 import co.com.techtest.api.handler.event.CreateEventHandler;
 import co.com.techtest.api.handler.event.GetEventsHandler;
 import co.com.techtest.api.handler.inventory.GetEventAvailabilityHandler;
+import co.com.techtest.api.handler.ticket.GetTicketHandler;
 import co.com.techtest.api.handler.ticket.PlaceTicketHandler;
 import co.com.techtest.model.util.enums.OperationType;
 import org.springdoc.webflux.core.fn.SpringdocRouteBuilder;
@@ -22,7 +23,7 @@ public class RouterRest {
     @Bean
     public RouterFunction<ServerResponse> routerFunction(CreateEventHandler createEventHandler, GetEventsHandler getEventsHandler,
                                                          GetEventAvailabilityHandler getEventAvailabilityHandler,
-                                                         PlaceTicketHandler placeTicketHandler) {
+                                                         PlaceTicketHandler placeTicketHandler, GetTicketHandler getTicketHandler) {
         return SpringdocRouteBuilder.route()
                 .POST(OperationType.CREATE_EVENT.getPath(), request -> requireHeaders(request, createEventHandler::handle),
                         document(OperationType.CREATE_EVENT, CreateEventRequest.class))
@@ -32,6 +33,8 @@ public class RouterRest {
                         document(OperationType.GET_EVENT_AVAILABILITY, InventoryResponse.class))
                 .POST(OperationType.PLACE_EVENT_TICKET.getPath(), request -> requireHeaders(request, placeTicketHandler::handle),
                         document(OperationType.PLACE_EVENT_TICKET, TicketResponse.class))
+                .GET(OperationType.GET_TICKET.getPath(), request -> requireHeaders(request, getTicketHandler::handle),
+                        document(OperationType.GET_TICKET, TicketResponse.class))
                 .build();
     }
 }
