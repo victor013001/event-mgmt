@@ -5,11 +5,13 @@ import co.com.techtest.dynamodb.ticket.repository.TicketRepository;
 import co.com.techtest.model.ticket.Ticket;
 import co.com.techtest.model.ticket.gateway.TicketGateway;
 import co.com.techtest.model.util.enums.TechnicalMessageType;
+import co.com.techtest.model.util.enums.ticket.TicketStatus;
 import co.com.techtest.model.util.exception.BusinessException;
 import co.com.techtest.model.util.exception.TechnicalException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
@@ -64,6 +66,13 @@ public class TicketDynamoAdapter implements TicketGateway {
     private static final String UPDATE_TICKET_ONLY_KEY_RESPONSE = "updateTicketOnlyDynamoAdapterRS";
     private static final String UPDATE_TICKET_ONLY_ERROR_RESPONSE = "Update Ticket Only Dynamo Adapter Error Response";
     private static final String UPDATE_TICKET_ONLY_KEY_ERROR_RESPONSE = "updateTicketOnlyDynamoAdapterErrorRS";
+
+    private static final String FIND_TICKETS_BY_STATUS_REQUEST = "Find Tickets By Status Dynamo Adapter";
+    private static final String FIND_TICKETS_BY_STATUS_KEY_REQUEST = "findTicketsByStatusDynamoAdapterRQ";
+    private static final String FIND_TICKETS_BY_STATUS_RESPONSE = "Find Tickets By Status Dynamo Adapter Response";
+    private static final String FIND_TICKETS_BY_STATUS_KEY_RESPONSE = "findTicketsByStatusDynamoAdapterRS";
+    private static final String FIND_TICKETS_BY_STATUS_ERROR_RESPONSE = "Find Tickets By Status Dynamo Adapter Error Response";
+    private static final String FIND_TICKETS_BY_STATUS_KEY_ERROR_RESPONSE = "findTicketsByStatusDynamoAdapterErrorRS";
 
     @Override
     public Mono<Ticket> saveTicket(Ticket ticket) {
@@ -124,6 +133,15 @@ public class TicketDynamoAdapter implements TicketGateway {
                 .doOnSubscribe(_ -> log.info(UPDATE_TICKET_ONLY_REQUEST, kv(UPDATE_TICKET_ONLY_KEY_REQUEST, ticket)))
                 .doOnNext(updated -> log.info(UPDATE_TICKET_ONLY_RESPONSE, kv(UPDATE_TICKET_ONLY_KEY_RESPONSE, updated)))
                 .doOnError(error -> log.error(UPDATE_TICKET_ONLY_ERROR_RESPONSE, kv(UPDATE_TICKET_ONLY_KEY_ERROR_RESPONSE, error)))
+                .onErrorMap(DynamoDbException.class, exception -> new TechnicalException(exception, TechnicalMessageType.ERROR_MS_DYNAMO_ERROR));
+    }
+
+    @Override
+    public Flux<Ticket> findTicketsByStatus(TicketStatus status) {
+        return ticketRepository.findByStatus(status)
+                .doOnSubscribe(_ -> log.info(FIND_TICKETS_BY_STATUS_REQUEST, kv(FIND_TICKETS_BY_STATUS_KEY_REQUEST, status)))
+                .doOnNext(ticket -> log.info(FIND_TICKETS_BY_STATUS_RESPONSE, kv(FIND_TICKETS_BY_STATUS_KEY_RESPONSE, ticket)))
+                .doOnError(error -> log.error(FIND_TICKETS_BY_STATUS_ERROR_RESPONSE, kv(FIND_TICKETS_BY_STATUS_KEY_ERROR_RESPONSE, error)))
                 .onErrorMap(DynamoDbException.class, exception -> new TechnicalException(exception, TechnicalMessageType.ERROR_MS_DYNAMO_ERROR));
     }
 

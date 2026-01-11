@@ -6,6 +6,7 @@ dependencies {
     //ENTRY-POINT
     implementation project(':reactive-web')
     implementation project(':sqs-listener')
+    implementation project(':scheduler')
 
     //DRIVEN-ADAPTER
     implementation project(':dynamo-db')

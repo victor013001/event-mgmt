@@ -43,55 +43,87 @@ management:
 
 #SECURITY
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: "${CORS_ALLOWED_ORIGINS}"
 
 #ENTRYPOINTS
 entrypoint:
   sqs:
-    region: "us-east-1"
-    endpoint: "http://localhost:4566"
-    queueUrl: "http://localhost:4566/000000000000/sample"
-    waitTimeSeconds: 20
-    maxNumberOfMessages: 10
-    visibilityTimeoutSeconds: 10
-    numberOfThreads: 1
+    region: "${ENTRYPOINT_SQS_REGION}"
+    endpoint: "${ENTRYPOINT_SQS_ENDPOINT}"
+    queueUrl: "${ENTRYPOINT_SQS_QUEUE_URL}"
+    waitTimeSeconds: ${ENTRYPOINT_SQS_WAIT_TIME_SECONDS}
+    maxNumberOfMessages: ${ENTRYPOINT_SQS_MAX_NUMBER_OF_MESSAGES}
+    visibilityTimeoutSeconds: ${ENTRYPOINT_SQS_VISIBILITY_TIMEOUT_SECONDS}
+    numberOfThreads: ${ENTRYPOINT_SQS_NUMBER_OF_THREADS}
 
 #ADAPTERS
 aws:
-  region: "us-east-1"
+  region: "${AWS_REGION}"
   dynamodb:
-    endpoint: "http://localhost:8000"
+    endpoint: "${AWS_DYNAMODB_ENDPOINT}"
     event:
-      tableName: "events"
+      tableName: "${AWS_DYNAMODB_EVENT_TABLE_NAME}"
     inventory:
-      tableName: "inventory"
+      tableName: "${AWS_DYNAMODB_INVENTORY_TABLE_NAME}"
     ticket:
-      tableName: "tickets"
+      tableName: "${AWS_DYNAMODB_TICKET_TABLE_NAME}"
 adapter:
   sqs:
-    region: "us-east-1"
-    queueUrl: "http://localhost:4566/000000000000/sample"
-    endpoint: "http://localhost:4566 # For localstack only"
+    region: "${ADAPTER_SQS_REGION}"
+    queueUrl: "${ADAPTER_SQS_QUEUE_URL}"
+    endpoint: "${ADAPTER_SQS_ENDPOINT}"
 
 #RESILIENCE
 resilience4j:
   circuitbreaker:
     instances:
-      testGet:
-        registerHealthIndicator: true
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: "2s"
-        permittedNumberOfCallsInHalfOpenState: 3
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 10
-        waitDurationInOpenState: "10s"
-      testPost:
-        registerHealthIndicator: true
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: "2s"
-        permittedNumberOfCallsInHalfOpenState: 3
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 10
-        waitDurationInOpenState: "10s"
+      createEvent:
+        registerHealthIndicator: ${RESILIENCE4J_CB_CREATE_EVENT_REGISTER_HEALTH_INDICATOR}
+        failureRateThreshold: ${RESILIENCE4J_CB_CREATE_EVENT_FAILURE_RATE_THRESHOLD}
+        slowCallRateThreshold: ${RESILIENCE4J_CB_CREATE_EVENT_SLOW_CALL_RATE_THRESHOLD}
+        slowCallDurationThreshold: "${RESILIENCE4J_CB_CREATE_EVENT_SLOW_CALL_DURATION_THRESHOLD}"
+        permittedNumberOfCallsInHalfOpenState: ${RESILIENCE4J_CB_CREATE_EVENT_PERMITTED_CALLS_HALF_OPEN}
+        slidingWindowSize: ${RESILIENCE4J_CB_CREATE_EVENT_SLIDING_WINDOW_SIZE}
+        minimumNumberOfCalls: ${RESILIENCE4J_CB_CREATE_EVENT_MINIMUM_NUMBER_OF_CALLS}
+        waitDurationInOpenState: "${RESILIENCE4J_CB_CREATE_EVENT_WAIT_DURATION_OPEN_STATE}"
+      getEvents:
+        registerHealthIndicator: ${RESILIENCE4J_CB_GET_EVENTS_REGISTER_HEALTH_INDICATOR}
+        failureRateThreshold: ${RESILIENCE4J_CB_GET_EVENTS_FAILURE_RATE_THRESHOLD}
+        slowCallRateThreshold: ${RESILIENCE4J_CB_GET_EVENTS_SLOW_CALL_RATE_THRESHOLD}
+        slowCallDurationThreshold: "${RESILIENCE4J_CB_GET_EVENTS_SLOW_CALL_DURATION_THRESHOLD}"
+        permittedNumberOfCallsInHalfOpenState: ${RESILIENCE4J_CB_GET_EVENTS_PERMITTED_CALLS_HALF_OPEN}
+        slidingWindowSize: ${RESILIENCE4J_CB_GET_EVENTS_SLIDING_WINDOW_SIZE}
+        minimumNumberOfCalls: ${RESILIENCE4J_CB_GET_EVENTS_MINIMUM_NUMBER_OF_CALLS}
+        waitDurationInOpenState: "${RESILIENCE4J_CB_GET_EVENTS_WAIT_DURATION_OPEN_STATE}"
+      getEventAvailability:
+        registerHealthIndicator: ${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_REGISTER_HEALTH_INDICATOR}
+        failureRateThreshold: ${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_FAILURE_RATE_THRESHOLD}
+        slowCallRateThreshold: ${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_SLOW_CALL_RATE_THRESHOLD}
+        slowCallDurationThreshold: "${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_SLOW_CALL_DURATION_THRESHOLD}"
+        permittedNumberOfCallsInHalfOpenState: ${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_PERMITTED_CALLS_HALF_OPEN}
+        slidingWindowSize: ${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_SLIDING_WINDOW_SIZE}
+        minimumNumberOfCalls: ${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_MINIMUM_NUMBER_OF_CALLS}
+        waitDurationInOpenState: "${RESILIENCE4J_CB_GET_EVENT_AVAILABILITY_WAIT_DURATION_OPEN_STATE}"
+      placeTicket:
+        registerHealthIndicator: ${RESILIENCE4J_CB_PLACE_TICKET_REGISTER_HEALTH_INDICATOR}
+        failureRateThreshold: ${RESILIENCE4J_CB_PLACE_TICKET_FAILURE_RATE_THRESHOLD}
+        slowCallRateThreshold: ${RESILIENCE4J_CB_PLACE_TICKET_SLOW_CALL_RATE_THRESHOLD}
+        slowCallDurationThreshold: "${RESILIENCE4J_CB_PLACE_TICKET_SLOW_CALL_DURATION_THRESHOLD}"
+        permittedNumberOfCallsInHalfOpenState: ${RESILIENCE4J_CB_PLACE_TICKET_PERMITTED_CALLS_HALF_OPEN}
+        slidingWindowSize: ${RESILIENCE4J_CB_PLACE_TICKET_SLIDING_WINDOW_SIZE}
+        minimumNumberOfCalls: ${RESILIENCE4J_CB_PLACE_TICKET_MINIMUM_NUMBER_OF_CALLS}
+        waitDurationInOpenState: "${RESILIENCE4J_CB_PLACE_TICKET_WAIT_DURATION_OPEN_STATE}"
+      getTicket:
+        registerHealthIndicator: ${RESILIENCE4J_CB_GET_TICKET_REGISTER_HEALTH_INDICATOR}
+        failureRateThreshold: ${RESILIENCE4J_CB_GET_TICKET_FAILURE_RATE_THRESHOLD}
+        slowCallRateThreshold: ${RESILIENCE4J_CB_GET_TICKET_SLOW_CALL_RATE_THRESHOLD}
+        slowCallDurationThreshold: "${RESILIENCE4J_CB_GET_TICKET_SLOW_CALL_DURATION_THRESHOLD}"
+        permittedNumberOfCallsInHalfOpenState: ${RESILIENCE4J_CB_GET_TICKET_PERMITTED_CALLS_HALF_OPEN}
+        slidingWindowSize: ${RESILIENCE4J_CB_GET_TICKET_SLIDING_WINDOW_SIZE}
+        minimumNumberOfCalls: ${RESILIENCE4J_CB_GET_TICKET_MINIMUM_NUMBER_OF_CALLS}
+        waitDurationInOpenState: "${RESILIENCE4J_CB_GET_TICKET_WAIT_DURATION_OPEN_STATE}"
+
+# Scheduler Configuration
+scheduler:
+  ticket-expiration:
+    fixed-delay: ${SCHEDULER_TICKET_EXPIRATION_FIXED_DELAY}

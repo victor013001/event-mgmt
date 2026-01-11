@@ -148,6 +148,57 @@ This service prevents overselling using DynamoDB TransactWriteItems with conditi
 
 - Docker and Docker Compose
 - Java 25 toolchain
+- AWS CLI (for LocalStack setup)
+
+### LocalStack Setup Commands
+
+Create DynamoDB tables:
+
+```bash
+# Events table
+aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+    --table-name events \
+    --attribute-definitions \
+        AttributeName=id,AttributeType=S \
+        AttributeName=place,AttributeType=S \
+    --key-schema \
+        AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+        'IndexName=place-index,KeySchema=[{AttributeName=place,KeyType=HASH}],Projection={ProjectionType=ALL},ProvisionedThroughput={ReadCapacityUnits=5,WriteCapacityUnits=5}' \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+
+# Inventory table
+aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+    --table-name inventory \
+    --attribute-definitions AttributeName=eventId,AttributeType=S \
+    --key-schema AttributeName=eventId,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+
+# Tickets table with GSI for status queries
+aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+    --table-name tickets \
+    --attribute-definitions \
+        AttributeName=ticketId,AttributeType=S \
+        AttributeName=status,AttributeType=S \
+    --key-schema \
+        AttributeName=ticketId,KeyType=HASH \
+    --global-secondary-indexes \
+        'IndexName=status-index,KeySchema=[{AttributeName=status,KeyType=HASH}],Projection={ProjectionType=ALL},ProvisionedThroughput={ReadCapacityUnits=5,WriteCapacityUnits=5}' \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+```
+
+Create SQS queue with at-least-once delivery:
+
+```bash
+# Create queue with visibility timeout for at-least-once delivery
+aws --endpoint-url=http://localhost:4566 sqs create-queue \
+    --queue-name tickets-queue \
+    --attributes '{
+        "VisibilityTimeoutSeconds": "30",
+        "MessageRetentionPeriod": "1209600",
+        "ReceiveMessageWaitTimeSeconds": "20"
+    }'
+```
 
 ### Environment Variables
 

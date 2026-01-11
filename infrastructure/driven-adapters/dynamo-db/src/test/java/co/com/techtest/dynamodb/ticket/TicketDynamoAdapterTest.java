@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
@@ -222,13 +223,23 @@ class TicketDynamoAdapterTest {
     }
 
     @Test
-    void shouldHandleDynamoDbExceptionOnUpdateTicketOnly() {
+    void shouldFindTicketsByStatus() {
         Ticket ticket = createTestTicket();
 
-        when(ticketRepository.save(ticket))
-                .thenReturn(Mono.error(DynamoDbException.builder().build()));
+        when(ticketRepository.findByStatus(TicketStatus.RESERVED))
+                .thenReturn(Flux.just(ticket));
 
-        StepVerifier.create(ticketDynamoAdapter.updateTicketOnly(ticket))
+        StepVerifier.create(ticketDynamoAdapter.findTicketsByStatus(TicketStatus.RESERVED))
+                .expectNext(ticket)
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldHandleDynamoDbExceptionOnFindTicketsByStatus() {
+        when(ticketRepository.findByStatus(TicketStatus.RESERVED))
+                .thenReturn(Flux.error(DynamoDbException.builder().build()));
+
+        StepVerifier.create(ticketDynamoAdapter.findTicketsByStatus(TicketStatus.RESERVED))
                 .expectError(TechnicalException.class)
                 .verify();
     }

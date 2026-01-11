@@ -18,6 +18,7 @@ buildscript {
 
         //LOGGING
         logstashVersion = '8.0'
+        logbackClasicVersion = '1.5.18'
 
         //RESILIENCE
         resilience4jVersion = '2.2.0'

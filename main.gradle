@@ -41,15 +41,16 @@ subprojects {
 
         //UTIL
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
-        annotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
-        testCompileOnly  "org.projectlombok:lombok:${lombokVersion}"
-        testAnnotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
         //AWS
-		implementation platform("software.amazon.awssdk:bom:${awsSdkVersion}")
+        implementation platform("software.amazon.awssdk:bom:${awsSdkVersion}")
 
         if (!project.name.equalsIgnoreCase(modelModule) && !project.name.equalsIgnoreCase(useCaseModule)) {
             //LOGGING
+            dependencies.add("implementation", "ch.qos.logback:logback-classic:${logbackClasicVersion}")
             dependencies.add("implementation", "net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
         }
     }
