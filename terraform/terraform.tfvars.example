@@ -1,0 +1,22 @@
+region   = "us-east-1"
+app_name = "event-mgmt"
+vpc_cidr = "10.10.0.0/16"
+
+active_profile = "dev"
+
+# AWS Endpoints (empty for real AWS, set for LocalStack)
+aws_dynamodb_endpoint = ""
+adapter_sqs_endpoint = ""
+entrypoint_sqs_endpoint = ""
+
+# SQS Configuration
+entrypoint_sqs_wait_time_seconds = 20
+entrypoint_sqs_max_number_of_messages = 10
+entrypoint_sqs_visibility_timeout_seconds = 30
+entrypoint_sqs_number_of_threads = 1
+
+# CORS Configuration - CHANGE THIS TO YOUR DOMAIN
+cors_allowed_origins = "https://yourdomain.com,https://app.yourdomain.com"
+
+# Scheduler Configuration
+scheduler_ticket_expiration_fixed_delay = 300000
